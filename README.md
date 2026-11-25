@@ -1,5 +1,11 @@
 # Mwene Consulting — Guide du projet
 
+Site vitrine **trilingue (portugais, français, anglais)** de **Mwene Consulting**, conseil en ressources humaines pour les PME en Angola. C'est un site statique (HTML, CSS, JavaScript) : il n'a ni serveur ni base de données, et son formulaire de contact passe par Formspree.
+
+> **État : version 1.0, pas encore publiée.** Il reste à renseigner les coordonnées, à compléter les mentions légales et à faire valider les textes (voir la section 7).
+
+Le reste de ce document est un guide pratique pour modifier le site et le mettre en ligne.
+
 **Version du site : 1.0 — Septembre 2026**
 **Fondatrice : Ritatelma Fernandes Ambrosio**
 
@@ -44,7 +50,7 @@ mwene-consulting/
 
 ## 2. Ouvrir le projet dans VS Code
 
-1. Décompressez le fichier ZIP dans le dossier de votre choix.
+1. Clonez ou téléchargez le dépôt dans le dossier de votre choix.
 2. Ouvrez VS Code.
 3. Cliquez sur **Fichier → Ouvrir le dossier** et sélectionnez le dossier `mwene-consulting`.
 4. Vous verrez tous les fichiers dans le panneau de gauche.
@@ -140,7 +146,7 @@ Dans `contact.html`, recherchez :
 Remplacez par (en adaptant le numéro au format international) :
 
 ```html
-<a href="https://wa.me/33600000000" target="_blank" rel="noopener">+33 6 00 00 00 00</a>
+<a href="https://wa.me/NUMERO_INTERNATIONAL" target="_blank" rel="noopener">+XX XXX XXX XXX</a>
 ```
 
 ### LinkedIn
