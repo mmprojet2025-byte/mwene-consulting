@@ -7,14 +7,14 @@ from markupsafe import escape  # le même échappement que Jinja (' devient &#39
 
 from app.i18n import LANGUES, t
 
-# Chaque page : (adresse après la langue, titre <title>, clé du <h1>)
+# Chaque page : (adresse après la langue, clé du <title>, clé du <h1>)
 PAGES = [
-    ("", "Mwene Consulting — Apoio em RH para PME em Angola", "home_hero_title"),
-    ("services", "Serviços — Mwene Consulting", "services_hero_title"),
-    ("about", "Sobre — Mwene Consulting", "about_hero_title"),
-    ("contact", "Contacto — Mwene Consulting", "contact_hero_title"),
-    ("mentions-legales", "Menções legais — Mwene Consulting", "legal_title"),
-    ("confidentialite", "Política de privacidade — Mwene Consulting", "privacy_title"),
+    ("", "meta_title_home", "home_hero_title"),
+    ("services", "meta_title_services", "services_hero_title"),
+    ("about", "meta_title_about", "about_hero_title"),
+    ("contact", "meta_title_contact", "contact_hero_title"),
+    ("mentions-legales", "meta_title_legal", "legal_title"),
+    ("confidentialite", "meta_title_privacy", "privacy_title"),
 ]
 
 
@@ -30,15 +30,15 @@ def test_racine_redirige_vers_le_portugais(client):
 
 
 @pytest.mark.parametrize("lang", LANGUES)
-@pytest.mark.parametrize("chemin, titre, cle_h1", PAGES)
-def test_chaque_page_dans_chaque_langue(client, lang, chemin, titre, cle_h1):
+@pytest.mark.parametrize("chemin, cle_titre, cle_h1", PAGES)
+def test_chaque_page_dans_chaque_langue(client, lang, chemin, cle_titre, cle_h1):
     """6 pages × 3 langues = 18 combinaisons : 200, bon titre, bon <h1>, bonne langue."""
     response = client.get(f"/{lang}/{chemin}")
     html = response.get_data(as_text=True)
 
     assert response.status_code == 200
     assert f'<html dir="ltr" lang="{lang}">' in html
-    assert f"<title>{titre}</title>" in html
+    assert f"<title>{texte(cle_titre, lang)}</title>" in html
     assert texte(cle_h1, lang) in html
     assert texte("nav_home", lang) in html  # en-tête traduit
     assert texte("footer_rights", lang) in html  # pied de page traduit

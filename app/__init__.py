@@ -9,7 +9,13 @@ from datetime import date
 from flask import Flask, g, redirect, render_template, request, url_for
 
 from app.config import DevelopmentConfig
-from app.i18n import LANGUE_PAR_DEFAUT, LANGUES, t_template, url_pour_langue
+from app.i18n import (
+    LANGUE_PAR_DEFAUT,
+    LANGUES,
+    t_template,
+    url_canonique,
+    url_pour_langue,
+)
 
 
 def create_app(config_class=DevelopmentConfig):
@@ -20,6 +26,7 @@ def create_app(config_class=DevelopmentConfig):
     # {{ t('nav_home') }} traduit dans la langue de la page en cours.
     app.jinja_env.globals["t"] = t_template
     app.jinja_env.globals["url_pour_langue"] = url_pour_langue
+    app.jinja_env.globals["url_canonique"] = url_canonique
 
     @app.context_processor
     def variables_communes():
@@ -27,12 +34,15 @@ def create_app(config_class=DevelopmentConfig):
         return {
             "lang": g.get("lang", LANGUE_PAR_DEFAUT),
             "langues": LANGUES,
+            "langue_par_defaut": LANGUE_PAR_DEFAUT,
             "annee": date.today().year,
         }
 
+    from app.seo import seo
     from app.vitrine.routes import vitrine
 
     app.register_blueprint(vitrine)
+    app.register_blueprint(seo)
 
     @app.route("/")
     def racine():

@@ -78,23 +78,30 @@ Prévus dans les prochaines étapes (voir le plan) : Flask-Login (connexion), Fl
 
 ## Structure des dossiers
 
-État actuel (après l'étape 1) :
+État actuel (après l'étape 5) :
 
 ```
 app/
   __init__.py        ← create_app() : la « fabrique » qui construit l'application
   config.py          ← réglages (développement, test)
+  i18n.py            ← t(clé, langue), adresses des pages dans chaque langue
+  seo.py             ← /sitemap.xml et /robots.txt, produits par Flask
+  vitrine/routes.py  ← pages publiques : /pt/, /fr/, /en/ + services, about, contact…
+  templates/         ← base.html, partials/ (en-tête, pied de page), vitrine/, 404.html, sitemap.xml
+  static/            ← css/style.css et js/main.js (repris de la v1)
+translations/        ← pt.json, fr.json, en.json (mêmes clés dans les trois)
 tests/
   conftest.py        ← fixtures pytest « app » et « client »
-  test_app.py
+  test_app.py, test_i18n.py, test_vitrine.py, test_seo.py
 docs/
   PLAN-v2.md         ← plan détaillé de la v2, en 14 étapes
   GUIDE-v1.md        ← guide de la v1 (site statique)
 requirements.txt     ← dépendances Python
 pytest.ini
 .env.example         ← modèle du fichier .env (variables secrètes)
-*.html, css/, js/    ← fichiers de la v1, supprimés à l'étape 5
 ```
+
+Les anciens fichiers de la v1 (`*.html`, `css/`, `js/`, `sitemap.xml`, `robots.txt`) ont été retirés de cette branche à l'étape 5. Ils restent intacts sur la branche `main`.
 
 Structure visée à la fin du plan :
 
@@ -159,9 +166,23 @@ pytest tests/test_app.py    # un seul fichier
 
 ## Avancement
 
-**Étape 1 sur 14 terminée** : squelette Flask avec pytest.
+**Étape 5 sur 14 terminée** : le site vitrine est entièrement repris en Flask, dans les 3 langues (étapes 1 à 4). Les anciens fichiers de la v1 ont été retirés de cette branche, et le référencement est en place (étape 5).
 
 Le détail des 14 étapes, avec ce que chacune construit et comment la vérifier, se trouve dans [docs/PLAN-v2.md](docs/PLAN-v2.md).
+
+## Référencement
+
+- **`/sitemap.xml`** liste les 4 pages indexables (accueil, services, à propos, contact) dans les 3 langues, avec leurs liens `hreflang`. Les pages légales et la page 404 sont en `noindex` et n'y figurent pas.
+- **`/robots.txt`** autorise tout le site et indique l'adresse du sitemap.
+- Chaque page indexable a une balise `canonical` et des balises `hreflang` (pt, fr, en et `x-default` vers le portugais).
+- Le domaine n'est écrit nulle part : Flask construit les adresses complètes à partir du domaine sur lequel le site tourne. Il n'y a donc plus de `VOTRE-DOMAINE.com` à remplacer avant la mise en ligne.
+- `<title>` et `<meta name="description">` sont traduits : clés `meta_title_*` et `meta_desc_*` dans `translations/`.
+
+## Textes à faire valider par la propriétaire
+
+Rien n'est inventé, mais certains textes n'ont pas encore été relus :
+
+- **Titres et descriptions des pages en français et en anglais** (clés `meta_title_*` et `meta_desc_*`). Le portugais reprend mot pour mot celui de la v1. Le français et l'anglais ont été traduits à partir de celui-ci et doivent être validés.
 
 ## Version 1
 

@@ -3,14 +3,24 @@
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-{# Titre et description en portugais pour l'instant : ils deviendront traduisibles à l'étape 5. #}
-{# Chaque page peut définir, en haut de son fichier :
-   {% set description = "…" %}  (facultatif, comme dans la v1)
+{# Chaque page définit son titre traduit dans {% block title %} et peut définir,
+   en haut de son fichier :
+   {% set description = t('meta_desc_…') %}  (facultatif, comme dans la v1)
    {% set robots = "noindex, follow" %}  (pages légales et 404) #}
 <title>{% block title %}Mwene Consulting{% endblock %}</title>
 {% if description %}<meta content="{{ description }}" name="description"/>
 {% endif %}<meta content="{{ robots | default('index, follow') }}" name="robots"/>
-{# Les balises canonical et hreflang seront ajoutées correctement à l'étape 5. #}
+{#- Pages indexables seulement : l'adresse officielle de la page (canonical)
+   et ses versions dans chaque langue (hreflang). x-default = version proposée
+   quand la langue du visiteur n'est pas prise en charge : le portugais. #}
+{#- Le « - » de {%- … %} retire le saut de ligne qui précède : pas de lignes vides. -#}
+{%- if not robots %}
+<link href="{{ url_canonique(lang) }}" rel="canonical"/>
+{%- for code in langues %}
+<link href="{{ url_canonique(code) }}" hreflang="{{ code }}" rel="alternate"/>
+{%- endfor %}
+<link href="{{ url_canonique(langue_par_defaut) }}" hreflang="x-default" rel="alternate"/>
+{%- endif %}
 <!-- Fonts -->
 <link href="https://fonts.googleapis.com" rel="preconnect"/>
 <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>

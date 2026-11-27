@@ -30,7 +30,7 @@ def test_aucune_valeur_vide(langue):
 @pytest.mark.parametrize(
     "cle, langue, attendu",
     [
-        # Valeurs recopiées de js/translations.js
+        # Valeurs recopiées de la v1 (js/translations.js, branche main)
         ("nav_home", "pt", "Início"),
         ("nav_home", "fr", "Accueil"),
         ("nav_home", "en", "Home"),

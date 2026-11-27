@@ -31,7 +31,7 @@ TRADUCTIONS = charger_traductions()
 def t(cle, langue=LANGUE_PAR_DEFAUT):
     """Renvoie le texte de « cle » dans « langue ».
 
-    Même comportement que t() dans js/translations.js :
+    Même comportement que t() dans la v1 (js/translations.js, branche main) :
     1. le texte dans la langue demandée ;
     2. sinon le texte en portugais ;
     3. sinon la clé elle-même (on voit tout de suite qu'il manque une traduction).
@@ -64,3 +64,15 @@ def url_pour_langue(langue):
         parametres = {**request.args.to_dict(), **request.view_args, "lang": langue}
         return url_for(request.endpoint, **parametres)
     return url_for("vitrine.accueil", lang=langue)
+
+
+def url_canonique(langue):
+    """Adresse complète et « propre » de la page en cours dans une langue.
+
+    Sert aux balises canonical et hreflang : /pt/contact?service=formacao
+    donne http://domaine/fr/contact pour langue="fr". Les paramètres après
+    « ? » sont retirés, pour que les moteurs de recherche ne voient qu'une
+    adresse par page et par langue. Le domaine est celui de la requête :
+    rien n'est écrit en dur.
+    """
+    return url_for(request.endpoint, **request.view_args, lang=langue, _external=True)
