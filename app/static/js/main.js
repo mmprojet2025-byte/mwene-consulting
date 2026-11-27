@@ -205,11 +205,11 @@ function initContactForm() {
     }
   });
 
-  // Bouton « Réessayer »
-  const retryBtn = document.getElementById('retry-btn');
-  if (retryBtn) {
-    retryBtn.addEventListener('click', () => showState('form'));
-  }
+  // Boutons « Réessayer » : il y en a deux (états « non configuré » et « erreur »),
+  // d'où une classe et querySelectorAll, et non un id (qui doit être unique).
+  document.querySelectorAll('.retry-btn').forEach(btn => {
+    btn.addEventListener('click', () => showState('form'));
+  });
 }
 
 /* ── Démarrage ──────────────────────────────────────────────── */

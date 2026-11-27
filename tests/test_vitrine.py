@@ -1,5 +1,7 @@
 """Tests du site vitrine (étapes 3 et 4)."""
 
+import re
+
 import pytest
 from markupsafe import escape  # le même échappement que Jinja (' devient &#39;)
 
@@ -110,6 +112,20 @@ def test_page_404_personnalisee(client, adresse, lang):
     assert texte("notfound_title", lang) in html
     assert f'<html dir="ltr" lang="{lang}">' in html
     assert '<meta content="noindex, follow" name="robots"/>' in html
+
+
+@pytest.mark.parametrize("chemin", [chemin for chemin, _, _ in PAGES])
+def test_aucun_id_en_double(client, chemin):
+    """Un id doit être unique dans une page : sinon getElementById ne trouve que le premier."""
+    html = client.get(f"/pt/{chemin}").get_data(as_text=True)
+    ids = re.findall(r'\sid="([^"]+)"', html)
+    doublons = sorted({i for i in ids if ids.count(i) > 1})
+    assert doublons == []
+
+
+def test_deux_boutons_reessayer(client):
+    html = client.get("/pt/contact").get_data(as_text=True)
+    assert html.count("retry-btn") == 2
 
 
 def test_css_et_js_servis(client):
