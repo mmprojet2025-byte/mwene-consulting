@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% set robots = "noindex, follow" %}
+
+{% block title %}Página não encontrada — Mwene Consulting{% endblock %}
+
+{% block content %}
+<div class="notfound">
+<div aria-hidden="true" class="notfound__code">404</div>
+<h1>{{ t('notfound_title') }}</h1>
+<p>{{ t('notfound_text') }}</p>
+<a class="btn btn--primary" href="{{ url_for('vitrine.accueil', lang=lang) }}">{{ t('notfound_btn') }}</a>
+</div>
+{% endblock %}

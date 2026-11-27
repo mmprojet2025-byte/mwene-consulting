@@ -32,3 +32,28 @@ def ajouter_langue(endpoint, values):
 @vitrine.route("/")
 def accueil():
     return render_template("vitrine/index.html", page="home")
+
+
+@vitrine.route("/services")
+def services():
+    return render_template("vitrine/services.html", page="services")
+
+
+@vitrine.route("/about")
+def about():
+    return render_template("vitrine/about.html", page="about")
+
+
+@vitrine.route("/contact")
+def contact():
+    return render_template("vitrine/contact.html", page="contact")
+
+
+@vitrine.route("/mentions-legales")
+def mentions_legales():
+    return render_template("vitrine/mentions-legales.html")
+
+
+@vitrine.route("/confidentialite")
+def confidentialite():
+    return render_template("vitrine/confidentialite.html")

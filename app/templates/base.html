@@ -4,9 +4,12 @@
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 {# Titre et description en portugais pour l'instant : ils deviendront traduisibles à l'étape 5. #}
+{# Chaque page peut définir, en haut de son fichier :
+   {% set description = "…" %}  (facultatif, comme dans la v1)
+   {% set robots = "noindex, follow" %}  (pages légales et 404) #}
 <title>{% block title %}Mwene Consulting{% endblock %}</title>
-<meta content="{% block description %}{% endblock %}" name="description"/>
-<meta content="index, follow" name="robots"/>
+{% if description %}<meta content="{{ description }}" name="description"/>
+{% endif %}<meta content="{{ robots | default('index, follow') }}" name="robots"/>
 {# Les balises canonical et hreflang seront ajoutées correctement à l'étape 5. #}
 <!-- Fonts -->
 <link href="https://fonts.googleapis.com" rel="preconnect"/>

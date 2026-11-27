@@ -1,6 +1,5 @@
 {# Traduction en Jinja de renderHeader() (js/components.js).
-   « page » indique le lien actif du menu : home, services, about, contact.
-   Les liens vers services, about et contact répondront à l'étape 4. #}
+   « page » indique le lien actif du menu : home, services, about, contact. #}
 <header class="site-header" role="banner">
   <div class="container">
     <div class="header-inner">
@@ -20,9 +19,9 @@
       <nav class="main-nav" id="main-nav" role="navigation" aria-label="Navigation principale">
         {% set liens = [
           ('home', url_for('vitrine.accueil'), 'nav_home'),
-          ('services', '/' ~ lang ~ '/services', 'nav_services'),
-          ('about', '/' ~ lang ~ '/about', 'nav_about'),
-          ('contact', '/' ~ lang ~ '/contact', 'nav_contact'),
+          ('services', url_for('vitrine.services'), 'nav_services'),
+          ('about', url_for('vitrine.about'), 'nav_about'),
+          ('contact', url_for('vitrine.contact'), 'nav_contact'),
         ] %}
         {% for nom, href, cle in liens %}
         <a href="{{ href }}" class="nav-link{% if page == nom %} active{% endif %}"{% if page == nom %} aria-current="page"{% endif %}>{{ t(cle) }}</a>

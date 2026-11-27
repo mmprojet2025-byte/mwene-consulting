@@ -1,0 +1,131 @@
+{% extends "base.html" %}
+{% set description = "Apoio ao recrutamento, organização de RH e formações sob pedido para PME em Angola. Prestações definidas sob orçamento." %}
+
+{% block title %}Serviços — Mwene Consulting{% endblock %}
+
+{% block content %}
+<!-- Hero -->
+<section aria-labelledby="services-page-title" class="page-hero">
+<div class="container">
+<h1 id="services-page-title">{{ t('services_hero_title') }}</h1>
+<p>{{ t('services_hero_subtitle') }}</p>
+</div>
+</section>
+<!-- Services -->
+<div class="container">
+<!-- ── Recrutamento ──────────────────────────────────────── -->
+<section aria-labelledby="rec-title" class="service-block" id="recrutamento">
+<div class="service-block__header">
+<div aria-hidden="true" class="service-block__icon">
+<svg fill="none" height="28" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" viewbox="0 0 24 24" width="28">
+<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+<circle cx="9" cy="7" r="4"></circle>
+<path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+<path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+</svg>
+</div>
+<h2 id="rec-title">{{ t('services_rec_title') }}</h2>
+</div>
+<div class="service-block__need">
+<strong>{{ t('services_rec_need') }}</strong>
+<p>{{ t('services_rec_need_text') }}</p>
+</div>
+<div class="service-block__body">
+<div>
+<h3 class="fade-in">{{ t('services_rec_prestations') }}</h3>
+<ul class="service-block__list fade-in" role="list">
+{% for i in range(1, 6) %}
+<li>{{ t('services_rec_p%d' % i) }}</li>
+{% endfor %}
+</ul>
+</div>
+<div>
+<div class="service-block__deliverables fade-in">
+<strong>{{ t('services_rec_deliverables') }}</strong>
+<p>{{ t('services_rec_del_text') }}</p>
+</div>
+<div class="service-block__note fade-in">
+<p>{{ t('services_rec_note') }}</p>
+</div>
+<a class="btn btn--primary fade-in" href="{{ url_for('vitrine.contact', service='recrutamento') }}">{{ t('services_rec_btn') }}</a>
+</div>
+</div>
+</section>
+<!-- ── Organização RH ────────────────────────────────────── -->
+<section aria-labelledby="hr-title" class="service-block" id="organizacao-rh">
+<div class="service-block__header">
+<div aria-hidden="true" class="service-block__icon">
+<svg fill="none" height="28" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" viewbox="0 0 24 24" width="28">
+<rect height="14" rx="2" width="20" x="2" y="3"></rect>
+<path d="M8 21h8M12 17v4"></path>
+<path d="M7 8h10M7 12h6"></path>
+</svg>
+</div>
+<h2 id="hr-title">{{ t('services_hr_title') }}</h2>
+</div>
+<div class="service-block__need">
+<strong>{{ t('services_rec_need') }}</strong>
+<p>{{ t('services_hr_need_text') }}</p>
+</div>
+<div class="service-block__body">
+<div>
+<h3 class="fade-in">{{ t('services_rec_prestations') }}</h3>
+<ul class="service-block__list fade-in" role="list">
+{% for i in range(1, 6) %}
+<li>{{ t('services_hr_p%d' % i) }}</li>
+{% endfor %}
+</ul>
+</div>
+<div>
+<div class="service-block__deliverables fade-in">
+<strong>{{ t('services_rec_deliverables') }}</strong>
+<p>{{ t('services_hr_del_text') }}</p>
+</div>
+<div class="service-block__warning fade-in">
+<p>{{ t('services_hr_note') }}</p>
+</div>
+<a class="btn btn--primary fade-in" href="{{ url_for('vitrine.contact', service='organizacao-rh') }}">{{ t('services_hr_btn') }}</a>
+</div>
+</div>
+</section>
+<!-- ── Formações ─────────────────────────────────────────── -->
+<section aria-labelledby="train-title" class="service-block" id="formacoes">
+<div class="service-block__header">
+<div aria-hidden="true" class="service-block__icon">
+<svg fill="none" height="28" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" viewbox="0 0 24 24" width="28">
+<path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path>
+<path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>
+</svg>
+</div>
+<h2 id="train-title">{{ t('services_train_title') }}</h2>
+</div>
+<div class="service-block__need">
+<strong>{{ t('services_rec_need') }}</strong>
+<p>{{ t('services_train_need_text') }}</p>
+</div>
+<div class="service-block__body">
+<div>
+<h3 class="fade-in">{{ t('services_train_themes') }}</h3>
+<ul class="service-block__list fade-in" role="list">
+{% for i in range(1, 4) %}
+<li>{{ t('services_train_p%d' % i) }}</li>
+{% endfor %}
+</ul>
+</div>
+<div>
+<div class="service-block__deliverables fade-in">
+<strong>{{ t('services_train_format') }}</strong>
+<p>{{ t('services_train_format_text') }}</p>
+</div>
+<a class="btn btn--primary fade-in" href="{{ url_for('vitrine.contact', service='formacao') }}">{{ t('services_train_btn') }}</a>
+</div>
+</div>
+</section>
+<!-- ── Devis ─────────────────────────────────────────────── -->
+<div class="quote-section fade-in">
+<h2>{{ t('services_quote_title') }}</h2>
+<p>{{ t('services_quote_text') }}</p>
+<a class="btn btn--primary" href="{{ url_for('vitrine.contact') }}">{{ t('services_quote_btn') }}</a>
+</div>
+</div>
+{% endblock %}

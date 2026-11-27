@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 
+{% set description = "A Mwene Consulting apoia as PME em Angola no recrutamento, organização de RH e formação das equipas. Acompanhamento à distância e no local." %}
 {% block title %}Mwene Consulting — Apoio em RH para PME em Angola{% endblock %}
-{% block description %}A Mwene Consulting apoia as PME em Angola no recrutamento, organização de RH e formação das equipas. Acompanhamento à distância e no local.{% endblock %}
 
 {% block content %}
 <!-- ── Hero ─────────────────────────────────────────────── -->
@@ -10,8 +10,8 @@
 <h1 id="hero-title">{{ t('home_hero_title') }}</h1>
 <p>{{ t('home_hero_subtitle') }}</p>
 <div class="btn-group">
-<a class="btn btn--primary" href="/{{ lang }}/contact">{{ t('home_cta_primary') }}</a>
-<a class="btn btn--outline-white" href="/{{ lang }}/services">{{ t('home_cta_secondary') }}</a>
+<a class="btn btn--primary" href="{{ url_for('vitrine.contact') }}">{{ t('home_cta_primary') }}</a>
+<a class="btn btn--outline-white" href="{{ url_for('vitrine.services') }}">{{ t('home_cta_secondary') }}</a>
 </div>
 </div>
 </section>
@@ -33,7 +33,7 @@
 </div>
 <h3>{{ t('home_service1_title') }}</h3>
 <p>{{ t('home_service1_desc') }}</p>
-<a class="btn btn--outline btn--sm" href="/{{ lang }}/services#recrutamento">{{ t('home_service1_link') }}</a>
+<a class="btn btn--outline btn--sm" href="{{ url_for('vitrine.services', _anchor='recrutamento') }}">{{ t('home_service1_link') }}</a>
 </article>
 <article class="service-card fade-in">
 <div aria-hidden="true" class="service-card__icon">
@@ -45,7 +45,7 @@
 </div>
 <h3>{{ t('home_service2_title') }}</h3>
 <p>{{ t('home_service2_desc') }}</p>
-<a class="btn btn--outline btn--sm" href="/{{ lang }}/services#organizacao-rh">{{ t('home_service2_link') }}</a>
+<a class="btn btn--outline btn--sm" href="{{ url_for('vitrine.services', _anchor='organizacao-rh') }}">{{ t('home_service2_link') }}</a>
 </article>
 <article class="service-card fade-in">
 <div aria-hidden="true" class="service-card__icon">
@@ -56,7 +56,7 @@
 </div>
 <h3>{{ t('home_service3_title') }}</h3>
 <p>{{ t('home_service3_desc') }}</p>
-<a class="btn btn--outline btn--sm" href="/{{ lang }}/services#formacoes">{{ t('home_service3_link') }}</a>
+<a class="btn btn--outline btn--sm" href="{{ url_for('vitrine.services', _anchor='formacoes') }}">{{ t('home_service3_link') }}</a>
 </article>
 </div>
 </div>
@@ -90,7 +90,7 @@
 <div class="about-teaser__text fade-in">
 <h2 id="about-teaser-title">{{ t('home_about_title') }}</h2>
 <p>{{ t('home_about_text') }}</p>
-<a class="btn btn--outline" href="/{{ lang }}/about">{{ t('home_about_link') }}</a>
+<a class="btn btn--outline" href="{{ url_for('vitrine.about') }}">{{ t('home_about_link') }}</a>
 </div>
 </div>
 </div>
@@ -101,7 +101,7 @@
 <h2 id="cta-title">{{ t('home_final_cta_title') }}</h2>
 <p>{{ t('home_final_cta_text') }}</p>
 <div class="btn-group">
-<a class="btn btn--primary" href="/{{ lang }}/contact">{{ t('home_final_cta_btn') }}</a>
+<a class="btn btn--primary" href="{{ url_for('vitrine.contact') }}">{{ t('home_final_cta_btn') }}</a>
 </div>
 </div>
 </section>

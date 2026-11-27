@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% set robots = "noindex, follow" %}
+
+{% block title %}Menções legais — Mwene Consulting{% endblock %}
+
+{% block content %}
+<div class="legal-content">
+<h1>{{ t('legal_title') }}</h1>
+<div class="to-complete" role="note">{{ t('legal_to_complete') }}</div>
+<h2>{{ t('legal_editor_title') }}</h2>
+<p>{{ t('legal_editor_text') }}</p>
+<h2>{{ t('legal_host_title') }}</h2>
+<p>{{ t('legal_host_text') }}</p>
+<h2>{{ t('legal_contact_title') }}</h2>
+<p>{{ t('legal_contact_text') }}</p>
+<p style="margin-top:40px; font-size:0.85rem; color:var(--gray); font-style:italic;">
+        Esta página será completada com as informações legais reais antes da publicação do site. Nenhuma informação foi inventada.
+      </p>
+</div>
+{% endblock %}

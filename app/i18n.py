@@ -55,9 +55,12 @@ def t_template(cle, langue=None):
 def url_pour_langue(langue):
     """Adresse de la page en cours dans une autre langue (pour le sélecteur PT/FR/EN).
 
-    /fr/ -> /en/ par exemple. Si la page en cours n'est pas connue
-    (page d'erreur), on renvoie vers l'accueil de cette langue.
+    /fr/contact?service=formacao -> /en/contact?service=formacao par exemple :
+    les paramètres après « ? » sont gardés, comme dans la v1.
+    Si la page en cours n'est pas connue (page d'erreur), on renvoie vers
+    l'accueil de cette langue.
     """
     if request.endpoint and request.view_args is not None:
-        return url_for(request.endpoint, **request.view_args, lang=langue)
+        parametres = {**request.args.to_dict(), **request.view_args, "lang": langue}
+        return url_for(request.endpoint, **parametres)
     return url_for("vitrine.accueil", lang=langue)

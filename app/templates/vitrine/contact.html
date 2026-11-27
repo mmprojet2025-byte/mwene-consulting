@@ -1,0 +1,176 @@
+{% extends "base.html" %}
+{% set description = "Apresente o seu pedido à Mwene Consulting. Recrutamento, organização de RH ou formação — discutimos a sua necessidade." %}
+
+{% block title %}Contacto — Mwene Consulting{% endblock %}
+
+{% block content %}
+<!-- Hero -->
+<section aria-labelledby="contact-page-title" class="page-hero">
+<div class="container">
+<h1 id="contact-page-title">{{ t('contact_hero_title') }}</h1>
+<p>{{ t('contact_hero_subtitle') }}</p>
+</div>
+</section>
+<!-- Contact layout -->
+<section class="section">
+<div class="container">
+<div class="contact-layout">
+<!-- Form column -->
+<div class="contact-form-wrap">
+<h2>{{ t('contact_form_title') }}</h2>
+<!-- Not-configured notice (shown by JS if Formspree not set) -->
+<div class="not-configured-notice" id="not-configured-notice" role="alert" style="display:none;">
+<strong>⚠ </strong><span>{{ t('contact_not_configured') }}</span>
+</div>
+<!-- State: form -->
+<div class="form-state active" id="state-form">
+{# Les data-msg-* donnent à main.js les messages traduits (avant : t() en JavaScript). #}
+<form aria-label="Formulário de contacto" data-formspree-id="YOUR_FORMSPREE_ID" id="contact-form" novalidate=""
+      data-msg-required="{{ t('contact_field_required') }}"
+      data-msg-email="{{ t('contact_invalid_email') }}"
+      data-msg-sending="{{ t('contact_sending') }}"
+      data-msg-submit="{{ t('contact_submit') }}">
+<!-- Honeypot anti-spam -->
+<div aria-hidden="true" style="display:none;">
+<label for="website">Ne pas remplir</label>
+<input autocomplete="off" id="website" name="website" tabindex="-1" type="text"/>
+</div>
+<div class="form-row">
+<div class="form-group">
+<label class="form-label" for="name">
+<span>{{ t('contact_name') }}</span>
+<span aria-hidden="true" class="required">*</span>
+</label>
+<input aria-describedby="error-name" aria-required="true" autocomplete="name" class="form-control" id="name" name="name" placeholder="{{ t('contact_name_placeholder') }}" required="" type="text"/>
+<span aria-live="polite" class="form-error" id="error-name" role="alert"></span>
+</div>
+<div class="form-group">
+<label class="form-label" for="company">
+<span>{{ t('contact_company') }}</span>
+<span aria-hidden="true" class="required">*</span>
+</label>
+<input aria-describedby="error-company" aria-required="true" autocomplete="organization" class="form-control" id="company" name="company" placeholder="{{ t('contact_company_placeholder') }}" required="" type="text"/>
+<span aria-live="polite" class="form-error" id="error-company" role="alert"></span>
+</div>
+</div>
+<div class="form-row">
+<div class="form-group">
+<label class="form-label" for="email">
+<span>{{ t('contact_email') }}</span>
+<span aria-hidden="true" class="required">*</span>
+</label>
+<input aria-describedby="error-email" aria-required="true" autocomplete="email" class="form-control" id="email" name="email" placeholder="{{ t('contact_email_placeholder') }}" required="" type="email"/>
+<span aria-live="polite" class="form-error" id="error-email" role="alert"></span>
+</div>
+<div class="form-group">
+<label class="form-label" for="phone">
+<span>{{ t('contact_phone') }}</span>
+</label>
+<input autocomplete="tel" class="form-control" id="phone" name="phone" placeholder="{{ t('contact_phone_placeholder') }}" type="tel"/>
+</div>
+</div>
+<div class="form-group">
+<label class="form-label" for="service">
+<span>{{ t('contact_service') }}</span>
+</label>
+{# Les valeurs doivent correspondre aux liens ?service=… de la page Services. #}
+<select class="form-control" id="service" name="service">
+<option value="">{{ t('contact_service_default') }}</option>
+<option value="recrutamento">{{ t('contact_service_rec') }}</option>
+<option value="organizacao-rh">{{ t('contact_service_hr') }}</option>
+<option value="formacao">{{ t('contact_service_train') }}</option>
+<option value="outro">{{ t('contact_service_other') }}</option>
+</select>
+</div>
+<div class="form-group">
+<label class="form-label" for="message">
+<span>{{ t('contact_message') }}</span>
+<span aria-hidden="true" class="required">*</span>
+</label>
+<textarea aria-describedby="error-message message-hint" aria-required="true" class="form-control" id="message" name="message" placeholder="{{ t('contact_message_placeholder') }}" required="" rows="6"></textarea>
+<span class="form-hint" id="message-hint">{{ t('contact_message_hint') }}</span>
+<span aria-live="polite" class="form-error" id="error-message" role="alert"></span>
+</div>
+<button class="btn btn--primary" type="submit">{{ t('contact_submit') }}</button>
+</form>
+</div>
+<!-- State: not configured -->
+<div class="form-state" id="state-not-configured">
+<div class="state-error">
+<div class="state-icon">
+<svg aria-hidden="true" fill="none" height="32" stroke="currentColor" stroke-linecap="round" stroke-width="2" viewbox="0 0 24 24" width="32">
+<circle cx="12" cy="12" r="10"></circle>
+<line x1="12" x2="12" y1="8" y2="12"></line>
+<line x1="12" x2="12.01" y1="16" y2="16"></line>
+</svg>
+</div>
+<h3>{{ t('contact_error_title') }}</h3>
+<p>{{ t('contact_not_configured') }}</p>
+<button class="btn btn--outline mt-16" id="retry-btn">{{ t('contact_retry') }}</button>
+</div>
+</div>
+<!-- State: success -->
+<div class="form-state" id="state-success">
+<div class="state-success">
+<div class="state-icon">
+<svg aria-hidden="true" fill="none" height="32" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" viewbox="0 0 24 24" width="32">
+<polyline points="20 6 9 17 4 12"></polyline>
+</svg>
+</div>
+<h3>{{ t('contact_success_title') }}</h3>
+<p>{{ t('contact_success_text') }}</p>
+</div>
+</div>
+<!-- State: error -->
+<div class="form-state" id="state-error">
+<div class="state-error">
+<div class="state-icon">
+<svg aria-hidden="true" fill="none" height="32" stroke="currentColor" stroke-linecap="round" stroke-width="2" viewbox="0 0 24 24" width="32">
+<circle cx="12" cy="12" r="10"></circle>
+<line x1="15" x2="9" y1="9" y2="15"></line>
+<line x1="9" x2="15" y1="9" y2="15"></line>
+</svg>
+</div>
+<h3>{{ t('contact_error_title') }}</h3>
+<p>{{ t('contact_error_text') }}</p>
+<button class="btn btn--outline mt-16" id="retry-btn">{{ t('contact_retry') }}</button>
+</div>
+</div>
+</div>
+<!-- Sidebar -->
+<aside aria-label="Coordonnées directes" class="contact-sidebar">
+<h3>{{ t('contact_direct_title') }}</h3>
+<!-- Email — à compléter -->
+<div class="contact-info-item">
+<svg aria-hidden="true" fill="none" height="18" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" viewbox="0 0 24 24" width="18">
+<path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+<polyline points="22,6 12,13 2,6"></polyline>
+</svg>
+<span class="contact-placeholder">[E-mail profissional a completar]</span>
+</div>
+<!-- WhatsApp — à compléter -->
+<div class="contact-info-item">
+<svg aria-hidden="true" fill="none" height="18" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" viewbox="0 0 24 24" width="18">
+<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+</svg>
+<span class="contact-placeholder">[WhatsApp profissional a completar]</span>
+</div>
+<!-- LinkedIn — à compléter -->
+<div class="contact-info-item">
+<svg aria-hidden="true" fill="none" height="18" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" viewbox="0 0 24 24" width="18">
+<path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path>
+<rect height="12" width="4" x="2" y="9"></rect>
+<circle cx="4" cy="4" r="2"></circle>
+</svg>
+<span class="contact-placeholder">[LinkedIn à compléter]</span>
+</div>
+<div style="margin-top:32px; padding:20px; background:var(--gray-light); border-radius:var(--radius); border:1px solid var(--gray-mid);">
+<p style="font-size:0.85rem; color:var(--text-light); margin:0; font-style:italic;">
+                Les coordonnées directes seront affichées ici une fois renseignées. Elles ne sont pas inventées.
+              </p>
+</div>
+</aside>
+</div>
+</div>
+</section>
+{% endblock %}

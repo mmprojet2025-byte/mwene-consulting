@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% set robots = "noindex, follow" %}
+
+{% block title %}Política de privacidade — Mwene Consulting{% endblock %}
+
+{% block content %}
+<div class="legal-content">
+<h1>{{ t('privacy_title') }}</h1>
+<div class="to-complete" role="note">
+<span>{{ t('legal_to_complete') }}</span>
+        O serviço de envio de formulário deve ser identificado antes da publicação.
+      </div>
+<p>{{ t('privacy_intro') }}</p>
+<h2>{{ t('privacy_data_title') }}</h2>
+<p>{{ t('privacy_data_text') }}</p>
+<h2>{{ t('privacy_purpose_title') }}</h2>
+<p>{{ t('privacy_purpose_text') }}</p>
+<h2>{{ t('privacy_retention_title') }}</h2>
+<p>{{ t('privacy_retention_text') }}</p>
+<h2>{{ t('privacy_rights_title') }}</h2>
+<p>{{ t('privacy_rights_text') }}</p>
+<h2>{{ t('privacy_service_title') }}</h2>
+<p>{{ t('privacy_service_text') }}</p>
+<p style="margin-top:40px; font-size:0.85rem; color:var(--gray); font-style:italic;">
+        Esta política será completada e validada antes da publicação do site, em função do serviço de formulário retido e das ferramentas de medição de audiência eventualmente utilizadas.
+      </p>
+</div>
+{% endblock %}

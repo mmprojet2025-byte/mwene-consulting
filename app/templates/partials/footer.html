@@ -1,5 +1,4 @@
-{# Traduction en Jinja de renderFooter() (js/components.js).
-   Les liens vers services, mentions légales, confidentialité et contact répondront à l'étape 4. #}
+{# Traduction en Jinja de renderFooter() (js/components.js). #}
 <footer class="site-footer" role="contentinfo">
   <div class="container">
     <div class="footer-grid">
@@ -14,22 +13,22 @@
       <div class="footer-col">
         <h4>{{ t('footer_services') }}</h4>
         <ul>
-          <li><a href="/{{ lang }}/services#recrutamento">{{ t('footer_recruitment') }}</a></li>
-          <li><a href="/{{ lang }}/services#organizacao-rh">{{ t('footer_hr_org') }}</a></li>
-          <li><a href="/{{ lang }}/services#formacoes">{{ t('footer_training') }}</a></li>
+          <li><a href="{{ url_for('vitrine.services', _anchor='recrutamento') }}">{{ t('footer_recruitment') }}</a></li>
+          <li><a href="{{ url_for('vitrine.services', _anchor='organizacao-rh') }}">{{ t('footer_hr_org') }}</a></li>
+          <li><a href="{{ url_for('vitrine.services', _anchor='formacoes') }}">{{ t('footer_training') }}</a></li>
         </ul>
       </div>
       <div class="footer-col">
         <h4>{{ t('footer_legal') }}</h4>
         <ul>
-          <li><a href="/{{ lang }}/mentions-legales">{{ t('footer_mentions') }}</a></li>
-          <li><a href="/{{ lang }}/confidentialite">{{ t('footer_privacy') }}</a></li>
+          <li><a href="{{ url_for('vitrine.mentions_legales') }}">{{ t('footer_mentions') }}</a></li>
+          <li><a href="{{ url_for('vitrine.confidentialite') }}">{{ t('footer_privacy') }}</a></li>
         </ul>
       </div>
       <div class="footer-col">
         <h4>{{ t('footer_contact_us') }}</h4>
         <ul>
-          <li><a href="/{{ lang }}/contact">{{ t('home_cta_primary') }}</a></li>
+          <li><a href="{{ url_for('vitrine.contact') }}">{{ t('home_cta_primary') }}</a></li>
         </ul>
       </div>
     </div>
