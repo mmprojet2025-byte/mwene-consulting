@@ -59,7 +59,9 @@ Toutes les pages ont le même squelette : des emplacements vides `<div id="site-
 
 - Activer l'environnement : `source .venv/bin/activate`
 - Installer les dépendances : `pip install -r requirements.txt`
-- Les commandes pour lancer le site et les tests seront ajoutées quand elles existeront.
+- Lancer le site en développement : `flask --app app run --debug --port 5001`, puis ouvrir http://127.0.0.1:5001/. Sur Mac, il faut utiliser `--port 5001`, car le port 5000 (celui de Flask par défaut) est pris par AirPlay.
+- Lancer tous les tests : `pytest`
+- Lancer un seul fichier de tests : `pytest tests/test_app.py`
 
 ### Base de données
 

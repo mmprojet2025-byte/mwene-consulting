@@ -45,7 +45,7 @@ Chaque étape se termine par `pytest` (tout au vert), une vérification dans le 
 ### 1. Squelette Flask + pytest
 - **On construit** : une application minimale grâce à une fabrique `create_app()`, avec une route `/` qui répond. On met aussi en place pytest.
 - **Fichiers** : `app/__init__.py`, `app/config.py`, `tests/conftest.py` (fixtures `app` et `client`), `tests/test_app.py`. On ajoute `pytest` à `requirements.txt`. On crée `.env.example` (`SECRET_KEY=`) et on ajoute `instance/` à `.gitignore`. Dans CLAUDE.md, on remplit la section « Commandes ».
-- **Vérifier** : `flask --app app run --debug` puis ouvrir http://127.0.0.1:5000/. Lancer `pytest` : 1 test passe.
+- **Vérifier** : `flask --app app run --debug --port 5001` puis ouvrir http://127.0.0.1:5001/ (sur Mac, le port 5000 est pris par AirPlay). Lancer `pytest` : 1 test passe.
 
 ### 2. Traductions en JSON
 - **On construit** : on convertit une seule fois `js/translations.js` en trois fichiers JSON, avec un petit script Python relu ensemble avant d'être lancé. On écrit `app/i18n.py` avec `t(key, lang)`, qui garde le même comportement qu'aujourd'hui : repli sur `pt`, puis sur la clé elle-même. La fonction `t` devient disponible dans les templates Jinja.
@@ -107,7 +107,7 @@ Chaque étape se termine par `pytest` (tout au vert), une vérification dans le 
 
 ## Vérification générale (à chaque étape)
 1. `source .venv/bin/activate && pytest` : tous les tests passent.
-2. `flask --app app run --debug` : vérification manuelle dans le navigateur, dans les 3 langues.
+2. `flask --app app run --debug --port 5001` : vérification manuelle dans le navigateur, dans les 3 langues.
 3. `/commit-propre` : commit après ton accord. Pas de push sans ta demande.
 
 ## Points à valider par la propriétaire plus tard (rien d'inventé)
