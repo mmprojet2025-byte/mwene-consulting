@@ -1,348 +1,168 @@
-# Mwene Consulting — Guide du projet
+# Mwene Consulting, version 2 (Flask)
 
-Site vitrine **trilingue (portugais, français, anglais)** de **Mwene Consulting**, conseil en ressources humaines pour les PME en Angola. C'est un site statique (HTML, CSS, JavaScript) : il n'a ni serveur ni base de données, et son formulaire de contact passe par Formspree.
+Mwene Consulting est un cabinet de conseil en ressources humaines pour les PME en Angola. Cette version 2 transforme son site statique en application web Flask. Elle comprend deux parties :
 
-> **État : version 1.0, pas encore publiée.** Il reste à renseigner les coordonnées, à compléter les mentions légales et à faire valider les textes (voir la section 7).
+- **le site vitrine**, qui reprend à l'identique les pages de la v1 (accueil, services, à propos, contact, pages légales) ;
+- **l'Espace Recrutement**, réservé aux entreprises clientes : offres d'emploi, candidatures avec consentement, suivi des candidats par statuts et aide de l'IA.
 
-Le reste de ce document est un guide pratique pour modifier le site et le mettre en ligne.
+Tout le texte visible existe en **portugais (par défaut), français et anglais**. L'application est prévue pour **plusieurs pays**, chacun avec sa langue et sa devise. Au départ, seul l'Angola est enregistré.
 
-**Version du site : 1.0 — Septembre 2026**
-**Fondatrice : Ritatelma Fernandes Ambrosio**
-
----
-
-## Sommaire
-
-1. [Structure du projet](#1-structure-du-projet)
-2. [Ouvrir le projet dans VS Code](#2-ouvrir-le-projet-dans-vs-code)
-3. [Lancer le site localement](#3-lancer-le-site-localement)
-4. [Modifier les textes et traductions](#4-modifier-les-textes-et-traductions)
-5. [Renseigner les coordonnées](#5-renseigner-les-coordonnées)
-6. [Activer le formulaire de contact](#6-activer-le-formulaire-de-contact)
-7. [Ce qui reste à compléter avant publication](#7-ce-qui-reste-à-compléter-avant-publication)
-8. [Mettre le site en ligne](#8-mettre-le-site-en-ligne)
+> Ce projet est en cours de développement (voir [Avancement](#avancement)). Les schémas ci-dessous décrivent l'architecture **visée**, pas encore l'état actuel du code.
 
 ---
 
-## 1. Structure du projet
+## Architecture
+
+```mermaid
+flowchart LR
+    N["Navigateur<br/>(visiteur, candidat,<br/>entreprise, admin Mwene)"]
+
+    subgraph F["Application Flask"]
+        V["vitrine<br/>pages publiques<br/>/pt/ /fr/ /en/"]
+        E["espace<br/>Espace Recrutement<br/>connexion obligatoire"]
+        C["candidature<br/>page publique d'une offre<br/>+ envoi du CV"]
+        AI["ai.py<br/>seul module qui<br/>parle à l'IA"]
+    end
+
+    DB[("Base SQLite<br/>instance/mwene.db")]
+    UP[["Dossier des CV<br/>instance/uploads/<br/>(hors de static/)"]]
+    API["API de l'IA<br/>(Claude)"]
+
+    N --> V
+    N --> E
+    N --> C
+    E --> DB
+    C --> DB
+    C --> UP
+    E --> UP
+    E --> AI
+    AI --> API
+```
+
+- Les trois parties (`vitrine`, `espace`, `candidature`) partagent les mêmes gabarits et les mêmes traductions (`translations/pt.json`, `fr.json`, `en.json`).
+- Le dossier `instance/` contient la base et les CV. Il n'est **jamais** commité.
+- Seul `app/ai.py` communique avec l'API de l'IA. La clé d'API se trouve dans `.env`, jamais dans le code.
+
+## Parcours d'une candidature
+
+```mermaid
+flowchart TD
+    A["Le candidat ouvre la page publique de l'offre"] --> B["Il remplit le formulaire et joint son CV (PDF, 5 Mo max)"]
+    B --> K{"Case de consentement cochée ?"}
+    K -- Non --> R1["Envoi refusé"]
+    K -- Oui --> P{"Vrai PDF et taille correcte ?"}
+    P -- Non --> R2["Envoi refusé"]
+    P -- Oui --> S["CV stocké sous un nom aléatoire<br/>+ date et version du consentement enregistrées<br/>Statut : reçu"]
+    S --> IA["L'IA résume le CV et le compare à l'offre<br/>« Généré par IA — à vérifier »"]
+    IA --> H["Une personne de l'entreprise lit le résumé<br/>et consulte le CV"]
+    H --> D{"Décision humaine"}
+    D --> ST["Changement de statut :<br/>présélectionné → entretien → retenu / refusé"]
+```
+
+L'IA ne fait que **proposer** un résumé. Elle ne change jamais un statut et ne classe pas les candidats. C'est toujours une personne qui décide.
+
+---
+
+## Technologies
+
+| Rôle | Outil |
+|---|---|
+| Langage | Python 3 |
+| Framework web | Flask 3.1 |
+| Base de données | SQLite avec Flask-SQLAlchemy 3.1 |
+| Tests | pytest |
+| Gabarits HTML | Jinja (inclus dans Flask) |
+| Styles | le `style.css` de la v1, repris tel quel |
+
+Prévus dans les prochaines étapes (voir le plan) : Flask-Login (connexion), Flask-WTF (protection CSRF), Flask-Limiter (limite des tentatives de connexion), python-dotenv (lecture du fichier `.env`), pypdf (lecture du texte des CV) et le SDK `anthropic` (API de l'IA).
+
+## Structure des dossiers
+
+État actuel (après l'étape 1) :
 
 ```
-mwene-consulting/
-├── index.html              ← Page Accueil
-├── services.html           ← Page Nos services
-├── about.html              ← Page À propos
-├── contact.html            ← Page Contact
-├── mentions-legales.html   ← Mentions légales
-├── confidentialite.html    ← Politique de confidentialité
-├── 404.html                ← Page introuvable
-├── sitemap.xml             ← Plan du site (à mettre à jour avec le domaine)
-├── robots.txt              ← Instructions pour les moteurs de recherche
-├── README.md               ← Ce guide
-├── css/
-│   └── style.css           ← Toute la mise en forme du site
-└── js/
-    ├── translations.js     ← Tous les textes en PT, FR et EN
-    ├── components.js       ← En-tête et pied de page partagés
-    └── main.js             ← Navigation, formulaire, animations
+app/
+  __init__.py        ← create_app() : la « fabrique » qui construit l'application
+  config.py          ← réglages (développement, test)
+tests/
+  conftest.py        ← fixtures pytest « app » et « client »
+  test_app.py
+docs/
+  PLAN-v2.md         ← plan détaillé de la v2, en 14 étapes
+  GUIDE-v1.md        ← guide de la v1 (site statique)
+requirements.txt     ← dépendances Python
+pytest.ini
+.env.example         ← modèle du fichier .env (variables secrètes)
+*.html, css/, js/    ← fichiers de la v1, supprimés à l'étape 5
+```
+
+Structure visée à la fin du plan :
+
+```
+app/
+  __init__.py, config.py
+  i18n.py              ← t(clé, langue)
+  models.py            ← Country, Company, User, JobOffer, Candidate
+  vitrine/routes.py    ← pages publiques
+  espace/routes.py     ← Espace Recrutement
+  candidature/routes.py ← page publique d'une offre + envoi de CV
+  ai.py                ← appels à l'IA
+  templates/           ← base.html, partials/, pages…
+  static/              ← css/style.css, js/main.js
+translations/          ← pt.json, fr.json, en.json
+tests/
+instance/              ← base SQLite + CV (jamais commités)
+```
+
+## Commandes
+
+Toutes les commandes se lancent depuis la racine du projet.
+
+**Installer** (la première fois) :
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+```
+
+Ensuite, à chaque nouvelle session, il suffit d'activer l'environnement :
+
+```bash
+source .venv/bin/activate
+```
+
+**Lancer le site en développement** :
+
+```bash
+flask --app app run --debug --port 5001
+```
+
+Ouvrez ensuite http://127.0.0.1:5001/. Sur Mac, il faut utiliser le port 5001, car le port 5000 (celui de Flask par défaut) est pris par AirPlay.
+
+**Lancer les tests** :
+
+```bash
+pytest                      # tous les tests
+pytest tests/test_app.py    # un seul fichier
 ```
 
 ---
 
-## 2. Ouvrir le projet dans VS Code
+## Principes de sécurité
 
-1. Clonez ou téléchargez le dépôt dans le dossier de votre choix.
-2. Ouvrez VS Code.
-3. Cliquez sur **Fichier → Ouvrir le dossier** et sélectionnez le dossier `mwene-consulting`.
-4. Vous verrez tous les fichiers dans le panneau de gauche.
+- **Les CV sont des données personnelles.** Aucune candidature n'est acceptée sans le consentement du candidat. La date et la version du texte accepté sont enregistrées. Les CV sont contrôlés (vrai PDF, 5 Mo maximum), puis stockés sous un nom aléatoire dans `instance/uploads/`, **jamais dans `static/`**. Ils ne sont donc pas accessibles par une simple adresse. Supprimer un candidat supprime aussi son fichier (droit à l'effacement).
+- **Isolation entre entreprises.** Chaque entreprise ne voit que ses propres offres, candidats et CV. Toutes les requêtes filtrent par l'entreprise de l'utilisateur connecté, grâce à une seule fonction réutilisée partout. Des tests vérifient qu'une entreprise B reçoit une erreur 404 sur les données d'une entreprise A.
+- **L'IA ne décide jamais.** Elle propose des brouillons d'offres et des résumés de CV, toujours relus par un humain. Elle n'a accès à aucune action : elle ne publie rien, ne change aucun statut et ne classe personne. Le texte d'un CV est traité comme une donnée, jamais comme une instruction (protection contre la *prompt injection*).
+- **Comptes et connexion.** Il n'y a pas d'inscription publique : les comptes sont créés par un administrateur Mwene. Les mots de passe sont hachés, les formulaires sont protégés contre le CSRF, et le nombre de tentatives de connexion est limité.
+- **Secrets.** La clé `SECRET_KEY` et la clé de l'API de l'IA se trouvent dans `.env`, qui n'est jamais commité. `.env.example` montre les variables attendues, sans leurs valeurs.
 
-**Extension recommandée :** installez **Live Server** (ritwickdey.LiveServer) depuis l'onglet Extensions de VS Code. Elle permet de voir le site en direct dans votre navigateur.
+## Avancement
 
----
+**Étape 1 sur 14 terminée** : squelette Flask avec pytest.
 
-## 3. Lancer le site localement
+Le détail des 14 étapes, avec ce que chacune construit et comment la vérifier, se trouve dans [docs/PLAN-v2.md](docs/PLAN-v2.md).
 
-### Avec Live Server (recommandé)
+## Version 1
 
-1. Installez l'extension **Live Server** dans VS Code.
-2. Faites un clic droit sur `index.html` dans le panneau de fichiers.
-3. Cliquez sur **Open with Live Server**.
-4. Le site s'ouvre automatiquement dans votre navigateur.
-
-Toute modification d'un fichier est visible immédiatement sans recharger manuellement.
-
-### Sans extension (alternative)
-
-Ouvrez simplement `index.html` dans votre navigateur en double-cliquant dessus.
-
-> ⚠️ Le formulaire de contact ne fonctionnera pas en local tant que Formspree n'est pas configuré. C'est normal — voir section 6.
-
----
-
-## 4. Modifier les textes et traductions
-
-**Tous les textes du site se trouvent dans un seul fichier :**
-
-```
-js/translations.js
-```
-
-Ce fichier contient trois sections : `pt` (portugais), `fr` (français), `en` (anglais).
-
-### Exemple : modifier le titre de la page d'accueil
-
-Recherchez `home_hero_title` dans `translations.js` :
-
-```javascript
-pt: {
-  home_hero_title: "Recrute e acompanhe as suas equipas com a Mwene Consulting",
-  ...
-},
-fr: {
-  home_hero_title: "Recrutez et accompagnez vos équipes avec Mwene Consulting",
-  ...
-},
-en: {
-  home_hero_title: "Recruit and support your teams with Mwene Consulting",
-  ...
-}
-```
-
-Modifiez le texte entre guillemets dans la langue souhaitée, enregistrez le fichier, et la modification apparaît immédiatement dans le navigateur.
-
-### Règles importantes
-
-- Ne modifiez pas les clés (ex. `home_hero_title`) — seulement les valeurs entre guillemets.
-- Si un texte contient une apostrophe (`'`), utilisez `\'` ou remplacez par `"..."`.
-- Modifiez les trois langues pour maintenir la cohérence.
-
----
-
-## 5. Renseigner les coordonnées
-
-Les coordonnées directes (email, WhatsApp, LinkedIn) ne sont pas encore renseignées. Voici comment les ajouter.
-
-### Email professionnel
-
-Dans `contact.html`, recherchez :
-
-```html
-<span class="contact-placeholder">[E-mail profissional a completar]</span>
-```
-
-Remplacez par :
-
-```html
-<a href="mailto:contact@mweneconsulting.com">contact@mweneconsulting.com</a>
-```
-
-### WhatsApp
-
-Dans `contact.html`, recherchez :
-
-```html
-<span class="contact-placeholder">[WhatsApp profissional a completar]</span>
-```
-
-Remplacez par (en adaptant le numéro au format international) :
-
-```html
-<a href="https://wa.me/NUMERO_INTERNATIONAL" target="_blank" rel="noopener">+XX XXX XXX XXX</a>
-```
-
-### LinkedIn
-
-Dans `contact.html`, recherchez :
-
-```html
-<span class="contact-placeholder">[LinkedIn à compléter]</span>
-```
-
-Remplacez par :
-
-```html
-<a href="https://linkedin.com/company/mwene-consulting" target="_blank" rel="noopener">Mwene Consulting sur LinkedIn</a>
-```
-
-### Pied de page
-
-Le pied de page est généré par `js/components.js`. Pour y ajouter des liens de contact, modifiez la fonction `renderFooter()` dans ce fichier.
-
----
-
-## 6. Activer le formulaire de contact
-
-Le formulaire utilise **Formspree** — un service gratuit qui reçoit les messages et les envoie par email. Aucun serveur n'est nécessaire.
-
-### Étape 1 : Créer un compte Formspree
-
-1. Allez sur [formspree.io](https://formspree.io)
-2. Créez un compte gratuit avec l'adresse email professionnelle de Mwene Consulting.
-
-### Étape 2 : Créer un formulaire
-
-1. Dans votre tableau de bord Formspree, cliquez sur **New Form**.
-2. Donnez-lui un nom (ex. : "Mwene Consulting — Contact").
-3. Formspree vous donne un identifiant de formulaire, par exemple : `xpwzabcd`
-
-### Étape 3 : Configurer le site
-
-Dans `contact.html`, recherchez cette ligne :
-
-```html
-<form id="contact-form" novalidate data-formspree-id="YOUR_FORMSPREE_ID" ...>
-```
-
-Remplacez `YOUR_FORMSPREE_ID` par votre identifiant Formspree :
-
-```html
-<form id="contact-form" novalidate data-formspree-id="xpwzabcd" ...>
-```
-
-### Étape 4 : Vérifier la réception
-
-1. Ouvrez la page Contact dans votre navigateur.
-2. Remplissez le formulaire avec vos propres coordonnées.
-3. Cliquez sur **Envoyer**.
-4. Vérifiez que vous recevez bien l'email dans la boîte associée à Formspree.
-
-### Protection anti-spam
-
-Le formulaire inclut déjà :
-- Un champ honeypot invisible (les robots le remplissent, les humains non).
-- La validation côté navigateur avant envoi.
-- Formspree ajoute sa propre protection anti-spam côté serveur.
-
-### ⚠️ Important — Sécurité
-
-Ne placez jamais de mot de passe, clé API secrète ou token d'accès dans les fichiers JavaScript publics. L'identifiant Formspree est public par conception — c'est prévu ainsi.
-
----
-
-## 7. Ce qui reste à compléter avant publication
-
-### Indispensable avant mise en ligne
-
-| Élément | Où modifier | Statut |
-|---|---|---|
-| Email professionnel | `contact.html` — section coordonnées | ⬜ À compléter |
-| Numéro WhatsApp | `contact.html` — section coordonnées | ⬜ À compléter |
-| Lien LinkedIn | `contact.html` — section coordonnées | ⬜ À compléter |
-| Identifiant Formspree | `contact.html` — attribut `data-formspree-id` | ⬜ À configurer |
-| Mentions légales | `mentions-legales.html` | ⬜ À compléter |
-| Politique de confidentialité | `confidentialite.html` | ⬜ À compléter |
-| Domaine du site | `sitemap.xml` et `robots.txt` | ⬜ À remplacer |
-| Validation des textes FR | `js/translations.js` — section `fr` | ⬜ À valider par Ritatelma |
-| Validation des textes PT | `js/translations.js` — section `pt` | ⬜ À relire par locuteur natif |
-| Validation des textes EN | `js/translations.js` — section `en` | ⬜ À valider |
-
-### Facultatif
-
-| Élément | Où modifier | Statut |
-|---|---|---|
-| Photo de Ritatelma | `about.html` — remplacer le bloc `.founder-visual` | ⬜ Facultatif |
-| Logo définitif | `css/style.css` et `js/components.js` | ⬜ Facultatif |
-| Confirmation des services assurables | `js/translations.js` — textes des services | ⬜ À valider par Ritatelma |
-
-### Ajouter une photo (si disponible)
-
-Dans `about.html`, remplacez le bloc :
-
-```html
-<div class="founder-visual fade-in" ...>
-  <div class="founder-initials" aria-hidden="true">RFA</div>
-  ...
-</div>
-```
-
-Par :
-
-```html
-<div class="founder-visual fade-in">
-  <img src="images/ritatelma.jpg" alt="Ritatelma Fernandes Ambrosio, fondatrice de Mwene Consulting"
-       style="width:100%; border-radius:12px; margin-bottom:16px;">
-  <div class="founder-name">Ritatelma Fernandes Ambrosio</div>
-  <div class="founder-role">Fondatrice · Mwene Consulting</div>
-</div>
-```
-
-Placez la photo dans le dossier `images/` sous le nom `ritatelma.jpg`.
-
----
-
-## 8. Mettre le site en ligne
-
-### Option A — Hébergement simple (recommandé pour démarrer)
-
-**Netlify** (gratuit, très simple) :
-
-1. Allez sur [netlify.com](https://netlify.com) et créez un compte.
-2. Glissez-déposez le dossier `mwene-consulting` sur la page d'accueil Netlify.
-3. Le site est en ligne en moins d'une minute avec une URL temporaire.
-4. Connectez votre domaine dans les paramètres.
-
-**GitHub Pages** (gratuit) :
-
-1. Créez un compte sur [github.com](https://github.com).
-2. Créez un dépôt public et uploadez les fichiers.
-3. Activez GitHub Pages dans les paramètres du dépôt.
-
-### Option B — Hébergement classique
-
-Uploadez tous les fichiers du dossier `mwene-consulting` à la racine de votre hébergement via FTP (FileZilla ou équivalent).
-
-### Après mise en ligne
-
-1. Remplacez `VOTRE-DOMAINE.com` dans `sitemap.xml` et `robots.txt` par votre vrai domaine.
-2. Testez le formulaire avec un vrai envoi.
-3. Vérifiez l'affichage sur mobile et sur ordinateur.
-4. Vérifiez les trois langues.
-
----
-
-## Bilan honnête du projet
-
-### Ce qui a été réalisé
-
-- ✅ 4 pages principales (Accueil, Services, À propos, Contact)
-- ✅ 2 pages légales (Mentions légales, Confidentialité)
-- ✅ Page 404
-- ✅ 3 langues complètes (PT, FR, EN) dans un fichier centralisé
-- ✅ Sélecteur de langue fonctionnel avec mémorisation
-- ✅ Présélection du service sur la page Contact depuis les boutons de services
-- ✅ Formulaire avec validation, états (succès, erreur, envoi), protection honeypot
-- ✅ Navigation mobile (menu hamburger)
-- ✅ Design responsive (mobile, tablette, ordinateur)
-- ✅ Animations légères au scroll (respecte prefers-reduced-motion)
-- ✅ Navigation au clavier et focus visible
-- ✅ Hiérarchie des titres cohérente
-- ✅ Aucune information inventée
-- ✅ Aucun témoignage, logo client ou statistique fictif
-- ✅ Sitemap et robots.txt préparés
-- ✅ Favicon intégré
-
-### Ce qui a été testé en local
-
-- ✅ Structure HTML valide sur toutes les pages
-- ✅ Liens entre pages vérifiés
-- ✅ Changement de langue fonctionnel
-- ✅ Validation du formulaire (champs obligatoires, format email)
-- ✅ États du formulaire (succès, erreur, non configuré)
-- ✅ Menu mobile (ouverture, fermeture, Escape)
-- ✅ Présélection du service via paramètre URL
-
-### Ce qui reste à configurer
-
-- ⬜ Formspree : test de réception réelle impossible sans compte configuré
-- ⬜ Coordonnées directes (email, WhatsApp, LinkedIn) non encore renseignées
-- ⬜ Mentions légales et politique de confidentialité à compléter avec les vraies informations
-
-### Ce qui doit être validé par Ritatelma avant publication
-
-- ⬜ Tous les textes dans les trois langues (en particulier le portugais)
-- ⬜ Les services présentés correspondent bien aux prestations qu'elle peut assurer
-- ⬜ Les informations légales de l'entreprise
-- ⬜ Le choix du domaine et de l'hébergeur
-
----
-
-*Mwene Consulting — Site web v1.0 — Septembre 2026*
+La v1 (site statique HTML/CSS/JS, toujours disponible sur la branche `main`) est documentée dans [docs/GUIDE-v1.md](docs/GUIDE-v1.md). Ce guide contient notamment la liste des tâches avant mise en ligne.
