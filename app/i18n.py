@@ -7,6 +7,8 @@ avec exactement les mêmes clés dans les trois fichiers.
 import json
 from pathlib import Path
 
+from flask import g, request, url_for
+
 LANGUES = ("pt", "fr", "en")
 LANGUE_PAR_DEFAUT = "pt"
 
@@ -39,3 +41,23 @@ def t(cle, langue=LANGUE_PAR_DEFAUT):
         or TRADUCTIONS[LANGUE_PAR_DEFAUT].get(cle)
         or cle
     )
+
+
+def t_template(cle, langue=None):
+    """Version de t() pour les templates.
+
+    Sans langue précisée, on prend celle de la page en cours (g.lang,
+    lue dans l'URL par le blueprint), sinon le portugais.
+    """
+    return t(cle, langue or g.get("lang", LANGUE_PAR_DEFAUT))
+
+
+def url_pour_langue(langue):
+    """Adresse de la page en cours dans une autre langue (pour le sélecteur PT/FR/EN).
+
+    /fr/ -> /en/ par exemple. Si la page en cours n'est pas connue
+    (page d'erreur), on renvoie vers l'accueil de cette langue.
+    """
+    if request.endpoint and request.view_args is not None:
+        return url_for(request.endpoint, **request.view_args, lang=langue)
+    return url_for("vitrine.accueil", lang=langue)

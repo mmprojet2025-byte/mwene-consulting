@@ -1,0 +1,45 @@
+{# Traduction en Jinja de renderFooter() (js/components.js).
+   Les liens vers services, mentions légales, confidentialité et contact répondront à l'étape 4. #}
+<footer class="site-footer" role="contentinfo">
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <a href="{{ url_for('vitrine.accueil') }}" class="logo" aria-label="Mwene Consulting">
+          <span class="logo-main">MWENE</span>
+          <span class="logo-sub">Consulting</span>
+        </a>
+        <p>{{ t('footer_tagline') }}</p>
+        <p class="footer-note">{{ t('footer_note') }}</p>
+      </div>
+      <div class="footer-col">
+        <h4>{{ t('footer_services') }}</h4>
+        <ul>
+          <li><a href="/{{ lang }}/services#recrutamento">{{ t('footer_recruitment') }}</a></li>
+          <li><a href="/{{ lang }}/services#organizacao-rh">{{ t('footer_hr_org') }}</a></li>
+          <li><a href="/{{ lang }}/services#formacoes">{{ t('footer_training') }}</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>{{ t('footer_legal') }}</h4>
+        <ul>
+          <li><a href="/{{ lang }}/mentions-legales">{{ t('footer_mentions') }}</a></li>
+          <li><a href="/{{ lang }}/confidentialite">{{ t('footer_privacy') }}</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>{{ t('footer_contact_us') }}</h4>
+        <ul>
+          <li><a href="/{{ lang }}/contact">{{ t('home_cta_primary') }}</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© {{ annee }} Mwene Consulting. <span>{{ t('footer_rights') }}</span></span>
+    </div>
+  </div>
+</footer>
+<button class="back-to-top" id="back-to-top" aria-label="Voltar ao topo">
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true">
+    <polyline points="18 15 12 9 6 15"/>
+  </svg>
+</button>

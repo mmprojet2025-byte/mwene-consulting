@@ -1,0 +1,40 @@
+{# Traduction en Jinja de renderHeader() (js/components.js).
+   « page » indique le lien actif du menu : home, services, about, contact.
+   Les liens vers services, about et contact répondront à l'étape 4. #}
+<header class="site-header" role="banner">
+  <div class="container">
+    <div class="header-inner">
+      <a href="{{ url_for('vitrine.accueil') }}" class="logo" aria-label="{{ t('aria_logo') }}">
+        <span class="logo-main">MWENE</span>
+        <span class="logo-sub">Consulting</span>
+      </a>
+      <button class="menu-toggle" id="menu-toggle" aria-expanded="false" aria-controls="main-nav"
+              aria-label="{{ t('aria_menu_open') }}"
+              data-label-open="{{ t('aria_menu_open') }}" data-label-close="{{ t('aria_menu_close') }}">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+          <line x1="3" y1="6" x2="21" y2="6"/>
+          <line x1="3" y1="12" x2="21" y2="12"/>
+          <line x1="3" y1="18" x2="21" y2="18"/>
+        </svg>
+      </button>
+      <nav class="main-nav" id="main-nav" role="navigation" aria-label="Navigation principale">
+        {% set liens = [
+          ('home', url_for('vitrine.accueil'), 'nav_home'),
+          ('services', '/' ~ lang ~ '/services', 'nav_services'),
+          ('about', '/' ~ lang ~ '/about', 'nav_about'),
+          ('contact', '/' ~ lang ~ '/contact', 'nav_contact'),
+        ] %}
+        {% for nom, href, cle in liens %}
+        <a href="{{ href }}" class="nav-link{% if page == nom %} active{% endif %}"{% if page == nom %} aria-current="page"{% endif %}>{{ t(cle) }}</a>
+        {% endfor %}
+        <div class="lang-switcher" role="group" aria-label="{{ t('aria_lang_select') }}">
+          {% for code, nom_langue in [('pt', 'Português'), ('fr', 'Français'), ('en', 'English')] %}
+          <a href="{{ url_pour_langue(code) }}" class="lang-btn{% if code == lang %} active{% endif %}"
+             hreflang="{{ code }}" lang="{{ code }}" aria-label="{{ nom_langue }}"
+             aria-current="{{ 'true' if code == lang else 'false' }}">{{ code | upper }}</a>
+          {% endfor %}
+        </div>
+      </nav>
+    </div>
+  </div>
+</header>

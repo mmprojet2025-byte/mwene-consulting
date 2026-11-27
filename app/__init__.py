@@ -4,24 +4,39 @@ create_app() construit une nouvelle application à chaque appel.
 Les tests peuvent ainsi en créer une avec leurs propres réglages.
 """
 
-from flask import Flask
+from datetime import date
+
+from flask import Flask, g, redirect, url_for
 
 from app.config import DevelopmentConfig
-from app.i18n import t
+from app.i18n import LANGUE_PAR_DEFAUT, LANGUES, t_template, url_pour_langue
 
 
 def create_app(config_class=DevelopmentConfig):
     app = Flask(__name__, instance_relative_config=True)
     app.config.from_object(config_class)
 
-    # Rend t() utilisable dans tous les templates : {{ t('nav_home', 'fr') }}.
-    # À l'étape 3, la langue sera déduite de l'URL (/pt/, /fr/, /en/).
-    app.jinja_env.globals["t"] = t
+    # Fonctions utilisables dans tous les templates.
+    # {{ t('nav_home') }} traduit dans la langue de la page en cours.
+    app.jinja_env.globals["t"] = t_template
+    app.jinja_env.globals["url_pour_langue"] = url_pour_langue
 
-    # Route provisoire : elle prouve que l'application répond.
-    # À l'étape 3, « / » redirigera vers « /pt/ ».
+    @app.context_processor
+    def variables_communes():
+        """Variables disponibles dans tous les templates."""
+        return {
+            "lang": g.get("lang", LANGUE_PAR_DEFAUT),
+            "langues": LANGUES,
+            "annee": date.today().year,
+        }
+
+    from app.vitrine.routes import vitrine
+
+    app.register_blueprint(vitrine)
+
     @app.route("/")
-    def index():
-        return "Mwene Consulting"
+    def racine():
+        """« / » renvoie vers la version portugaise, langue par défaut."""
+        return redirect(url_for("vitrine.accueil", lang=LANGUE_PAR_DEFAUT))
 
     return app

@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+
+{% block title %}Mwene Consulting — Apoio em RH para PME em Angola{% endblock %}
+{% block description %}A Mwene Consulting apoia as PME em Angola no recrutamento, organização de RH e formação das equipas. Acompanhamento à distância e no local.{% endblock %}
+
+{% block content %}
+<!-- ── Hero ─────────────────────────────────────────────── -->
+<section aria-labelledby="hero-title" class="hero">
+<div class="container">
+<h1 id="hero-title">{{ t('home_hero_title') }}</h1>
+<p>{{ t('home_hero_subtitle') }}</p>
+<div class="btn-group">
+<a class="btn btn--primary" href="/{{ lang }}/contact">{{ t('home_cta_primary') }}</a>
+<a class="btn btn--outline-white" href="/{{ lang }}/services">{{ t('home_cta_secondary') }}</a>
+</div>
+</div>
+</section>
+<!-- ── Services overview ─────────────────────────────────── -->
+<section aria-labelledby="services-title" class="section">
+<div class="container">
+<div class="section-title fade-in">
+<h2 id="services-title">{{ t('home_services_title') }}</h2>
+</div>
+<div class="services-grid">
+<article class="service-card fade-in">
+<div aria-hidden="true" class="service-card__icon">
+<svg fill="none" height="28" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" viewbox="0 0 24 24" width="28">
+<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+<circle cx="9" cy="7" r="4"></circle>
+<path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+<path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+</svg>
+</div>
+<h3>{{ t('home_service1_title') }}</h3>
+<p>{{ t('home_service1_desc') }}</p>
+<a class="btn btn--outline btn--sm" href="/{{ lang }}/services#recrutamento">{{ t('home_service1_link') }}</a>
+</article>
+<article class="service-card fade-in">
+<div aria-hidden="true" class="service-card__icon">
+<svg fill="none" height="28" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" viewbox="0 0 24 24" width="28">
+<rect height="14" rx="2" width="20" x="2" y="3"></rect>
+<path d="M8 21h8M12 17v4"></path>
+<path d="M7 8h10M7 12h6"></path>
+</svg>
+</div>
+<h3>{{ t('home_service2_title') }}</h3>
+<p>{{ t('home_service2_desc') }}</p>
+<a class="btn btn--outline btn--sm" href="/{{ lang }}/services#organizacao-rh">{{ t('home_service2_link') }}</a>
+</article>
+<article class="service-card fade-in">
+<div aria-hidden="true" class="service-card__icon">
+<svg fill="none" height="28" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" viewbox="0 0 24 24" width="28">
+<path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path>
+<path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>
+</svg>
+</div>
+<h3>{{ t('home_service3_title') }}</h3>
+<p>{{ t('home_service3_desc') }}</p>
+<a class="btn btn--outline btn--sm" href="/{{ lang }}/services#formacoes">{{ t('home_service3_link') }}</a>
+</article>
+</div>
+</div>
+</section>
+<!-- ── Method ─────────────────────────────────────────────── -->
+<section aria-labelledby="method-title" class="section section--gray">
+<div class="container">
+<div class="section-title fade-in">
+<h2 id="method-title">{{ t('home_method_title') }}</h2>
+</div>
+<div class="steps-grid">
+{% for numero in range(1, 5) %}
+<div class="step fade-in">
+<div aria-hidden="true" class="step__number">{{ numero }}</div>
+<h3>{{ t('home_step%d_title' % numero) }}</h3>
+<p>{{ t('home_step%d_desc' % numero) }}</p>
+</div>
+{% endfor %}
+</div>
+</div>
+</section>
+<!-- ── About teaser ───────────────────────────────────────── -->
+<section aria-labelledby="about-teaser-title" class="section">
+<div class="container">
+<div class="about-teaser">
+<div aria-hidden="true" class="about-teaser__visual fade-in">
+<div class="about-teaser__initials">RFA</div>
+<div class="about-teaser__name">Ritatelma Fernandes Ambrosio</div>
+<div class="about-teaser__role">Fundadora · Mwene Consulting</div>
+</div>
+<div class="about-teaser__text fade-in">
+<h2 id="about-teaser-title">{{ t('home_about_title') }}</h2>
+<p>{{ t('home_about_text') }}</p>
+<a class="btn btn--outline" href="/{{ lang }}/about">{{ t('home_about_link') }}</a>
+</div>
+</div>
+</div>
+</section>
+<!-- ── Final CTA ──────────────────────────────────────────── -->
+<section aria-labelledby="cta-title" class="section section--blue cta-section">
+<div class="container">
+<h2 id="cta-title">{{ t('home_final_cta_title') }}</h2>
+<p>{{ t('home_final_cta_text') }}</p>
+<div class="btn-group">
+<a class="btn btn--primary" href="/{{ lang }}/contact">{{ t('home_final_cta_btn') }}</a>
+</div>
+</div>
+</section>
+{% endblock %}
