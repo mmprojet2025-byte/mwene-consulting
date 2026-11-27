@@ -48,7 +48,12 @@ Application web Flask de Mwene Consulting, cabinet de conseil en RH pour les PME
 
 ### Base de données
 
-Flask-SQLAlchemy est installé, mais n'est pas encore branché : ce sera l'étape 6 (modèle `Country`, commande `flask init-db`). SQLite en développement, dans `instance/`. Le fichier `.db` et le dossier `instance/` ne doivent jamais être commités (ils sont dans `.gitignore`).
+- Flask-SQLAlchemy, avec `db = SQLAlchemy()` défini dans `app/models.py` et relié à l'application par `db.init_app(app)` dans `create_app()`.
+- Adresse de la base (`SQLALCHEMY_DATABASE_URI` dans `config.py`) : `sqlite:///mwene.db` en développement (Flask-SQLAlchemy place un chemin relatif dans `instance/`, donc `instance/mwene.db`), et `sqlite://` (en mémoire) pour les tests.
+- `flask --app app init-db` crée les tables manquantes (`db.create_all()`) et ajoute les pays de `PAYS_INITIAUX` (uniquement l'Angola). Elle peut être relancée sans risque : elle n'efface rien et ne crée pas de doublon. Il n'y a pas encore d'outil de migration : `create_all()` ne modifie pas une table qui existe déjà.
+- Modèle `Country` : `code` (ISO 3166-1, 2 majuscules, unique), `langue_par_defaut` (une des `LANGUES`) et `devise` (ISO 4217, 3 majuscules). Des `@validates` refusent les valeurs mal formées. Le nom du pays n'est pas stocké : `nom(langue)` lit la clé `country_<code en minuscules>` dans les traductions. Ajouter un pays demande donc une ligne en base et cette clé dans les 3 fichiers JSON, sans modifier le code.
+- Tests : la fixture `app` crée les tables avant chaque test et les supprime après. Elle n'ouvre le contexte d'application que pour ces deux opérations : s'il restait ouvert, les requêtes du client de test le réutiliseraient et partageraient le même `g` (donc `g.lang`). Dans un test qui utilise `db.session`, ouvrez `with app.app_context():` (voir la fixture `contexte` de `test_models.py`).
+- Le fichier `.db` et le dossier `instance/` ne doivent jamais être commités (ils sont dans `.gitignore`). Ne lisez pas les fichiers `.db` (règle de `.claude/settings.json`).
 
 ## Règles
 

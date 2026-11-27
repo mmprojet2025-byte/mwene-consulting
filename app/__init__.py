@@ -6,6 +6,7 @@ Les tests peuvent ainsi en créer une avec leurs propres réglages.
 
 from datetime import date
 
+import click
 from flask import Flask, g, redirect, render_template, request, url_for
 
 from app.config import DevelopmentConfig
@@ -16,11 +17,30 @@ from app.i18n import (
     url_canonique,
     url_pour_langue,
 )
+from app.models import ajouter_pays_initiaux, db
 
 
 def create_app(config_class=DevelopmentConfig):
     app = Flask(__name__, instance_relative_config=True)
     app.config.from_object(config_class)
+
+    # Base de données : l'adresse est lue dans SQLALCHEMY_DATABASE_URI (config.py).
+    db.init_app(app)
+
+    @app.cli.command("init-db")
+    def init_db():
+        """Crée les tables manquantes et ajoute les pays de départ (Angola).
+
+        Usage : flask --app app init-db
+        On peut la relancer sans risque : rien n'est effacé ni ajouté deux fois.
+        """
+        db.create_all()
+        ajoutes = ajouter_pays_initiaux()
+        click.echo(f"Base prête : {db.engine.url.database}")
+        if ajoutes:
+            click.echo(f"Pays ajoutés : {', '.join(ajoutes)}")
+        else:
+            click.echo("Aucun pays ajouté (déjà présents).")
 
     # Fonctions utilisables dans tous les templates.
     # {{ t('nav_home') }} traduit dans la langue de la page en cours.

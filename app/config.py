@@ -20,6 +20,9 @@ class DevelopmentConfig(Config):
     """Réglages pour travailler en local."""
 
     DEBUG = True
+    # Fichier SQLite. Un chemin relatif est placé par Flask-SQLAlchemy dans
+    # le dossier instance/ (créé automatiquement, jamais commité).
+    SQLALCHEMY_DATABASE_URI = "sqlite:///mwene.db"
 
 
 class TestConfig(Config):
@@ -27,3 +30,6 @@ class TestConfig(Config):
 
     TESTING = True
     SECRET_KEY = "cle-de-test"
+    # Base SQLite en mémoire : vide au départ, aucun fichier créé,
+    # et une base neuve pour chaque test.
+    SQLALCHEMY_DATABASE_URI = "sqlite://"
