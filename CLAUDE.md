@@ -4,46 +4,60 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Projet
 
-Site vitrine statique et trilingue (PT par défaut, FR, EN) de Mwene Consulting, cabinet de conseil en RH pour les PME en Angola. HTML/CSS/JS natif : pas d'étape de build, pas de gestionnaire de paquets, pas de tests, pas de serveur. Le formulaire de contact envoie ses données à Formspree. Version 1.0, pas encore publiée. `README.md` est le guide destiné à la propriétaire du site et contient la liste des tâches avant mise en ligne (section 7).
+Application web Flask de Mwene Consulting, cabinet de conseil en RH pour les PME en Angola (branche `v2-flask`). Elle comprend un site vitrine trilingue (PT par défaut, FR, EN) et, à venir, un Espace Recrutement pour les entreprises clientes. Le plan en 14 étapes se trouve dans `docs/PLAN-v2.md`. `README.md` décrit le projet et son avancement.
 
-## Lancer le site en local
+## Commandes
 
-Il n'y a rien à compiler. Servez le dossier racine avec n'importe quel serveur statique, par exemple `python3 -m http.server 8000`, puis ouvrez `http://localhost:8000/`. Le README recommande l'extension Live Server de VS Code. Ouvrir `index.html` directement en `file://` fonctionne aussi.
+- Activer l'environnement : `source .venv/bin/activate`
+- Installer les dépendances : `pip install -r requirements.txt`
+- Lancer le site en développement : `flask --app app run --debug --port 5001`, puis ouvrir http://127.0.0.1:5001/. Sur Mac, il faut utiliser `--port 5001`, car le port 5000 (celui de Flask par défaut) est pris par AirPlay.
+- Lancer tous les tests : `pytest`
+- Lancer un seul fichier de tests : `pytest tests/test_app.py`
+- Lister les routes : `flask --app app routes`
 
 ## Architecture
 
-Toutes les pages ont le même squelette : des emplacements vides `<div id="site-header">` / `<div id="site-footer">`, puis trois scripts chargés **dans cet ordre** (ils partagent des variables globales, sans modules) :
+- `app/__init__.py` : `create_app(config_class)` est la fabrique de l'application. Elle enregistre les blueprints `vitrine` et `seo`, la page 404 personnalisée, la redirection `/` → `/pt/`, et rend disponibles dans tous les templates `t()`, `url_pour_langue()`, `url_canonique()`, `lang`, `langues`, `langue_par_defaut` et `annee`.
+- `app/config.py` : `DevelopmentConfig` et `TestConfig`. `SECRET_KEY` se lit dans l'environnement, jamais en dur.
+- `app/vitrine/routes.py` : blueprint avec le préfixe `/<lang>`. `url_value_preprocessor` retire la langue de l'URL, la range dans `g.lang`, et renvoie une 404 si elle est inconnue. `url_defaults` réutilise `g.lang` dans `url_for('vitrine.…')`. Chaque route passe `page=` pour indiquer le lien actif du menu.
+- `app/seo.py` : `/sitemap.xml` (les pages de `PAGES_INDEXEES` × 3 langues, avec `hreflang`) et `/robots.txt`. Les adresses sont complètes (`_external=True`) : aucun domaine n'est écrit en dur.
+- `app/templates/` : `base.html` (le `<head>`, avec `canonical` et `hreflang` sur les pages indexables), `partials/header.html` et `footer.html`, `vitrine/*.html`, `404.html`, `sitemap.xml`.
+- `app/static/` : `css/style.css` (repris de la v1) et `js/main.js` (menu mobile, retour en haut, fondus `.fade-in` → `.visible`, formulaire de contact). Il n'y a pas d'i18n côté client.
 
-1. `js/translations.js` définit `TRANSLATIONS` (objets `pt` / `fr` / `en` aux clés identiques) ainsi que le moteur i18n : `t(key)` (repli sur `pt`, puis sur la clé elle-même), `applyTranslations()`, `switchLang()`, `initLang()`.
-2. `js/components.js` contient `renderHeader()` / `renderFooter()` sous forme de template strings. `injectComponents()` remplace les emplacements : la navigation, le sélecteur de langue, le pied de page et le bouton de retour en haut se modifient donc ici, pas dans les pages HTML.
-3. `js/main.js` s'exécute au `DOMContentLoaded` : injection des composants → `initLang()` → branchement de la navigation, du retour en haut, des fondus, des boutons de langue et du formulaire de contact. Les composants doivent être injectés avant la traduction et la pose des écouteurs d'événements.
+### i18n (côté serveur)
 
-### i18n
+- Les textes sont dans `translations/pt.json`, `fr.json` et `en.json`, qui doivent avoir **exactement les mêmes clés** (un test le vérifie). Tout nouveau texte demande une clé dans les trois fichiers.
+- `app/i18n.py` : `t(cle, langue)` se replie sur `pt`, puis sur la clé elle-même. Dans les templates, `{{ t('cle') }}` utilise la langue de la page.
+- La langue est le premier morceau de l'URL : `/pt/`, `/fr/`, `/en/`. Le sélecteur de langue est fait de simples liens (`url_pour_langue()` garde la page et les paramètres `?…`).
+- `<title>` (`{% block title %}`) et la description (`{% set description = t('meta_desc_…') %}`) sont traduits avec les clés `meta_title_*` et `meta_desc_*`. Une page définit `{% set robots = "noindex, follow" %}` pour ne pas être indexée : elle n'a alors ni `canonical` ni `hreflang`, et ne doit pas figurer dans le sitemap.
+- Jinja échappe le HTML : les valeurs de traduction ne doivent pas contenir de balises.
 
-- Le texte est traduit côté client grâce à des attributs : `data-i18n` (textContent), `data-i18n-placeholder`, `data-i18n-aria` (aria-label), `data-i18n-title`. Le texte écrit en dur dans le HTML sert de repli en portugais ; gardez-le identique à la valeur `pt`.
-- Tout nouveau texte a besoin d'une clé dans **les trois** objets de langue de `translations.js`.
-- Choix de la langue : paramètre d'URL `?lang=` → `localStorage['mc_lang']` → `pt`. `switchLang()` met à jour `?lang=` avec `history.replaceState` (sans rechargement) et définit `<html lang>`.
-- `<title>` et `<meta name="description">` sont en portugais en dur et **ne sont pas** traduits.
-- `data-i18n` définit `textContent`, donc les valeurs de traduction ne peuvent pas contenir de HTML.
+### Formulaire de contact (`vitrine/contact.html` + `initContactForm` dans `main.js`)
 
-### Formulaire de contact (`contact.html` + `initContactForm` dans `main.js`)
+- Envoi vers Formspree. L'identifiant vient de `data-formspree-id`. Tant qu'il vaut `YOUR_FORMSPREE_ID`, le formulaire affiche l'état `not-configured` au lieu d'envoyer.
+- Les messages traduits sont passés à `main.js` par des attributs `data-msg-*` du formulaire.
+- Les états sont des éléments `.form-state` d'id `state-<nom>` (`form`, `success`, `error`, `not-configured`), basculés par `showState()`. `#website` est un champ honeypot.
+- Les champs `name`, `company`, `email` et `message` sont obligatoires, et les erreurs s'affichent dans `#error-<id>`.
+- `?service=<valeur>` présélectionne `#service`. Les valeurs `recrutamento`, `organizacao-rh` et `formacao` des liens de la page Services doivent correspondre aux `<option>` (un test le vérifie). Les ancres `#recrutamento`, `#organizacao-rh` et `#formacoes` de la page Services sont liées depuis le pied de page.
 
-- L'identifiant Formspree vient de l'attribut `data-formspree-id`. Tant qu'il vaut `YOUR_FORMSPREE_ID`, l'envoi affiche l'état `not-configured` au lieu d'envoyer.
-- Les états de l'interface sont des éléments `.form-state` d'id `state-<nom>` (`form`, `success`, `error`, `not-configured`), basculés par `showState()`.
-- `#website` est un champ honeypot. Les champs `name`, `company`, `email` et `message` sont obligatoires, et les erreurs s'affichent dans `#error-<id>`.
-- `?service=<valeur>` présélectionne le `<select>` `#service`. Les liens de la page Services utilisent `recrutamento`, `organizacao-rh` et `formacao`, qui doivent correspondre aux valeurs des `<option>`.
+### Tests
 
-### Autres remarques
+- `tests/conftest.py` fournit les fixtures `app` (`create_app(TestConfig)`) et `client`.
+- `test_i18n.py` (traductions), `test_vitrine.py` (chaque page × chaque langue, 404, menu, formulaire), `test_seo.py` (sitemap, robots, titres, hreflang).
+- Pour comparer un texte traduit au HTML, utilisez `markupsafe.escape(t(...))`, car Jinja échappe les apostrophes.
 
-- Les ancres de services de `services.html` (`#recrutamento`, `#organizacao-rh`, `#formacoes`) sont liées depuis le pied de page. `services.html` contient un script en ligne qui refait défiler jusqu'à l'ancre après l'injection.
-- `getBasePath()` dans `components.js` et `detectLang()` dans `translations.js` prévoient d'éventuels sous-dossiers `/fr/`, `/en/`, `/pt/` qui n'existent pas encore. Toutes les pages sont actuellement à la racine.
-- Les éléments `.fade-in` apparaissent grâce à un IntersectionObserver qui ajoute `.visible`.
-- Tous les styles sont dans `css/style.css`. Les polices sont Poppins et Inter, chargées depuis Google Fonts. Le favicon est un data URI SVG répété dans le `<head>` de chaque page.
+### Base de données
 
-## Contraintes sur le contenu
+Flask-SQLAlchemy est installé, mais n'est pas encore branché : ce sera l'étape 6 (modèle `Country`, commande `flask init-db`). SQLite en développement, dans `instance/`. Le fichier `.db` et le dossier `instance/` ne doivent jamais être commités (ils sont dans `.gitignore`).
 
-- N'inventez aucune information sur l'entreprise. Le README précise que le site ne contient ni témoignages, ni logos clients, ni statistiques, ni coordonnées inventés. Les textes provisoires comme `[E-mail profissional a completar]` (`.contact-placeholder` dans `contact.html`) sont volontaires, en attendant que la propriétaire fournisse les vraies informations.
-- `sitemap.xml` et `robots.txt` utilisent le domaine provisoire `VOTRE-DOMAINE.com`.
+## Règles
+
+- Tout texte visible existe en PT, FR et EN.
+- Le site doit pouvoir fonctionner pour plusieurs pays (pays, langue, devise).
+- L'IA aide mais ne décide jamais à la place d'un humain.
+- Les CV sont des données personnelles : consentement obligatoire, et accès limité à l'entreprise concernée.
+- N'inventez aucune information sur l'entreprise : ni témoignages, ni logos clients, ni statistiques, ni coordonnées, ni prix. Les textes provisoires comme `[E-mail profissional a completar]` (`.contact-placeholder` dans `vitrine/contact.html`) sont volontaires, en attendant les vraies informations de la propriétaire.
+- Les traductions FR/EN nouvelles sont à faire valider par la propriétaire (voir la section du README « Textes à faire valider »).
 
 ## Façon de travailler
 
@@ -52,24 +66,3 @@ Toutes les pages ont le même squelette : des emplacements vides `<div id="site-
 - Demande son accord avant de modifier un fichier, de faire un commit ou un push.
 - N'invente jamais d'informations (coordonnées, témoignages, chiffres, prix).
 - Réponds en français.
-
-## Version 2 (Flask), branche `v2-flask`
-
-### Commandes
-
-- Activer l'environnement : `source .venv/bin/activate`
-- Installer les dépendances : `pip install -r requirements.txt`
-- Lancer le site en développement : `flask --app app run --debug --port 5001`, puis ouvrir http://127.0.0.1:5001/. Sur Mac, il faut utiliser `--port 5001`, car le port 5000 (celui de Flask par défaut) est pris par AirPlay.
-- Lancer tous les tests : `pytest`
-- Lancer un seul fichier de tests : `pytest tests/test_app.py`
-
-### Base de données
-
-SQLite en développement, avec Flask-SQLAlchemy. Le fichier `.db` ne doit jamais être commité (`*.db` est dans `.gitignore`).
-
-### Règles
-
-- Tout texte visible existe en PT, FR et EN.
-- Le site doit pouvoir fonctionner pour plusieurs pays (pays, langue, devise).
-- L'IA aide mais ne décide jamais à la place d'un humain.
-- Les CV sont des données personnelles : consentement obligatoire, et accès limité à l'entreprise concernée.
