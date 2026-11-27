@@ -1,8 +1,0 @@
-# robots.txt — Mwene Consulting
-# Remplacer VOTRE-DOMAINE.com par le domaine réel avant publication
-
-User-agent: *
-Allow: /
-Disallow:
-
-Sitemap: https://VOTRE-DOMAINE.com/sitemap.xml
