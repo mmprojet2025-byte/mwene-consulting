@@ -44,3 +44,32 @@ Toutes les pages ont le même squelette : des emplacements vides `<div id="site-
 
 - N'inventez aucune information sur l'entreprise. Le README précise que le site ne contient ni témoignages, ni logos clients, ni statistiques, ni coordonnées inventés. Les textes provisoires comme `[E-mail profissional a completar]` (`.contact-placeholder` dans `contact.html`) sont volontaires, en attendant que la propriétaire fournisse les vraies informations.
 - `sitemap.xml` et `robots.txt` utilisent le domaine provisoire `VOTRE-DOMAINE.com`.
+
+## Façon de travailler
+
+- L'utilisateur est étudiant : explique chaque changement simplement avant de le faire.
+- Avance par petites étapes, chacune testable seule.
+- Demande son accord avant de modifier un fichier, de faire un commit ou un push.
+- N'invente jamais d'informations (coordonnées, témoignages, chiffres, prix).
+- Réponds en français.
+
+## Version 2 (Flask), branche `v2-flask`
+
+### Commandes
+
+- Activer l'environnement : `source .venv/bin/activate`
+- Installer les dépendances : `pip install -r requirements.txt`
+- Lancer le site en développement : `flask --app app run --debug --port 5001`, puis ouvrir http://127.0.0.1:5001/. Sur Mac, il faut utiliser `--port 5001`, car le port 5000 (celui de Flask par défaut) est pris par AirPlay.
+- Lancer tous les tests : `pytest`
+- Lancer un seul fichier de tests : `pytest tests/test_app.py`
+
+### Base de données
+
+SQLite en développement, avec Flask-SQLAlchemy. Le fichier `.db` ne doit jamais être commité (`*.db` est dans `.gitignore`).
+
+### Règles
+
+- Tout texte visible existe en PT, FR et EN.
+- Le site doit pouvoir fonctionner pour plusieurs pays (pays, langue, devise).
+- L'IA aide mais ne décide jamais à la place d'un humain.
+- Les CV sont des données personnelles : consentement obligatoire, et accès limité à l'entreprise concernée.
