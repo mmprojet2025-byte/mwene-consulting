@@ -7,7 +7,7 @@ avec exactement les mêmes clés dans les trois fichiers.
 import json
 from pathlib import Path
 
-from flask import g, request, url_for
+from flask import abort, g, request, url_for
 
 LANGUES = ("pt", "fr", "en")
 LANGUE_PAR_DEFAUT = "pt"
@@ -50,6 +50,28 @@ def t_template(cle, langue=None):
     lue dans l'URL par le blueprint), sinon le portugais.
     """
     return t(cle, langue or g.get("lang", LANGUE_PAR_DEFAUT))
+
+
+def brancher_langue(blueprint):
+    """Pour un blueprint dont les adresses commencent par /<lang>/ :
+
+    - avant chaque page, la langue est retirée de l'URL et rangée dans g.lang
+      (une langue inconnue comme /de/ donne une erreur 404) ;
+    - url_for('<blueprint>.…') réutilise la langue de la page en cours
+      si on ne la précise pas.
+    Utilisé par la vitrine et par l'Espace Recrutement.
+    """
+
+    @blueprint.url_value_preprocessor
+    def lire_langue(endpoint, values):
+        g.lang = values.pop("lang")
+        if g.lang not in LANGUES:
+            abort(404)
+
+    @blueprint.url_defaults
+    def ajouter_langue(endpoint, values):
+        if "lang" not in values and "lang" in g:
+            values["lang"] = g.lang
 
 
 def url_pour_langue(langue):
