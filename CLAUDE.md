@@ -61,6 +61,7 @@ Application web Flask de Mwene Consulting, cabinet de conseil en RH pour les PME
 - Le site doit pouvoir fonctionner pour plusieurs pays (pays, langue, devise).
 - L'IA aide mais ne décide jamais à la place d'un humain.
 - Les CV sont des données personnelles : consentement obligatoire, et accès limité à l'entreprise concernée.
+- Ne jamais lire, ouvrir ni inspecter la base de données ou les fichiers du dossier `instance/` (base SQLite, CV envoyés), par aucun moyen : outil de lecture, `cat`/`head`/`strings`, script ou commande Python (`python -c`, `flask shell`), `sqlite3`, copie du fichier… sans l'accord explicite de l'utilisateur, demandé à chaque fois. Les règles `deny` de `.claude/settings.json` ne bloquent qu'une partie de ces moyens : cette règle s'applique même quand aucun outil ne l'empêche. Reste permis : lancer l'application et ses commandes (`flask run`, `flask init-db`), qui utilisent la base sans en afficher le contenu, et les tests, qui utilisent une base en mémoire.
 - N'inventez aucune information sur l'entreprise : ni témoignages, ni logos clients, ni statistiques, ni coordonnées, ni prix. Les textes provisoires comme `[E-mail profissional a completar]` (`.contact-placeholder` dans `vitrine/contact.html`) sont volontaires, en attendant les vraies informations de la propriétaire.
 - Les traductions FR/EN nouvelles sont à faire valider par la propriétaire (voir la section du README « Textes à faire valider »).
 

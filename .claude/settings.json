@@ -24,6 +24,10 @@
       "Read(./.env)",
       "Read(./.env.*)",
       "Read(**/*.db)",
+      "Read(./instance/**)",
+      "Edit(./instance/**)",
+      "Bash(sqlite3)",
+      "Bash(sqlite3 *)",
       "Bash(rm -rf *)"
     ]
   }
