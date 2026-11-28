@@ -7,6 +7,7 @@ Les tests peuvent ainsi en créer une avec leurs propres réglages.
 from datetime import date
 
 import click
+import sqlalchemy
 from flask import Flask, g, redirect, render_template, request, url_for
 
 from app.config import DevelopmentConfig
@@ -17,7 +18,7 @@ from app.i18n import (
     url_canonique,
     url_pour_langue,
 )
-from app.models import ajouter_pays_initiaux, db
+from app.models import User, ajouter_pays_initiaux, db
 
 
 def create_app(config_class=DevelopmentConfig):
@@ -41,6 +42,44 @@ def create_app(config_class=DevelopmentConfig):
             click.echo(f"Pays ajoutés : {', '.join(ajoutes)}")
         else:
             click.echo("Aucun pays ajouté (déjà présents).")
+
+    @app.cli.command("create-admin")
+    @click.option("--email", prompt="E-mail de l'administrateur", help="E-mail du compte Mwene.")
+    def create_admin(email):
+        """Crée un compte administrateur Mwene (sans entreprise cliente).
+
+        Usage : flask --app app create-admin --email adresse@exemple.com
+
+        Le mot de passe est demandé deux fois, sans être affiché. Il n'est pas
+        accepté en option, pour qu'il ne reste pas dans l'historique du terminal.
+        """
+        if not sqlalchemy.inspect(db.engine).has_table(User.__tablename__):
+            raise click.ClickException(
+                "Les tables n'existent pas encore : lancez d'abord « flask --app app init-db »."
+            )
+
+        try:
+            admin = User(email=email, is_admin=True)
+        except ValueError as erreur:
+            raise click.ClickException(str(erreur))
+
+        deja_pris = db.session.execute(
+            db.select(User).filter_by(email=admin.email)
+        ).scalar_one_or_none()
+        if deja_pris is not None:
+            raise click.ClickException(f"Un compte existe déjà avec l'e-mail {admin.email}.")
+
+        mot_de_passe = click.prompt(
+            "Mot de passe", hide_input=True, confirmation_prompt="Confirmez le mot de passe"
+        )
+        try:
+            admin.set_password(mot_de_passe)
+        except ValueError as erreur:
+            raise click.ClickException(str(erreur))
+
+        db.session.add(admin)
+        db.session.commit()
+        click.echo(f"Administrateur créé : {admin.email}")
 
     # Fonctions utilisables dans tous les templates.
     # {{ t('nav_home') }} traduit dans la langue de la page en cours.
