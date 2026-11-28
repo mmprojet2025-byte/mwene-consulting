@@ -17,13 +17,13 @@ Application web Flask de Mwene Consulting, cabinet de conseil en RH pour les PME
 
 ## Architecture
 
-- `app/__init__.py` : `create_app(config_class)` est la fabrique de l'application. Elle relie `db`, `login_manager`, `csrf` et `limiter` à l'application, enregistre les blueprints `vitrine`, `espace` et `seo`, crée la redirection `/` → `/pt/` et les commandes `init-db` et `create-admin`. Elle rend disponibles dans tous les templates `t()`, `url_pour_langue()`, `url_canonique()`, `lang`, `langues`, `langue_par_defaut` et `annee`. Pages d'erreur traduites : 404 (`404.html`), 429 et 400 CSRF (`espace/erreur.html`). Leur langue vient de `langue_de_la_page_d_erreur()`.
+- `app/__init__.py` : `create_app(config_class)` est la fabrique de l'application. Elle relie `db`, `login_manager`, `csrf` et `limiter` à l'application, enregistre les blueprints `vitrine`, `espace` et `seo`, crée la redirection `/` → `/pt/` et les commandes `init-db` et `create-admin`. Elle rend disponibles dans tous les templates `t()`, `url_pour_langue()`, `url_canonique()`, `lang`, `langues`, `langue_par_defaut` et `annee`. Pages d'erreur traduites : 404 (`404.html`), 403, 429 et 400 CSRF (`espace/erreur.html`). Leur langue vient de `langue_de_la_page_d_erreur()`.
 - `app/config.py` : `DevelopmentConfig` et `TestConfig`. `SECRET_KEY` se lit dans l'environnement, jamais en dur. `SESSION_COOKIE_SAMESITE = "Lax"`, et `RATELIMIT_STORAGE_URI = "memory://"` (compteurs de tentatives en mémoire).
 - `app/vitrine/routes.py` : blueprint avec le préfixe `/<lang>`, branché sur la langue par `brancher_langue(vitrine)` (voir i18n). Chaque route passe `page=` pour indiquer le lien actif du menu.
-- `app/espace/routes.py` : blueprint `espace` avec le préfixe `/<lang>/espace`, lui aussi branché par `brancher_langue`. Routes `connexion` (GET/POST), `tableau_de_bord` (`@login_required`) et `deconnexion` (POST uniquement).
-- `app/securite.py` : `login_manager` (Flask-Login), `csrf` (`CSRFProtect` de Flask-WTF, pour tous les POST de l'application), `limiter` (Flask-Limiter, par adresse IP), `LIMITE_CONNEXION = "5 per minute"` et `verifier_identifiants()`.
+- `app/espace/routes.py` : blueprint `espace` avec le préfixe `/<lang>/espace`, lui aussi branché par `brancher_langue`. Routes `connexion` (GET/POST), `tableau_de_bord` (`@login_required`), `deconnexion` (POST uniquement), et les routes d'administration `admin` (GET), `creer_entreprise` et `creer_compte` (POST), toutes protégées par `@admin_requis`.
+- `app/securite.py` : `login_manager` (Flask-Login), `csrf` (`CSRFProtect` de Flask-WTF, pour tous les POST de l'application), `limiter` (Flask-Limiter, par adresse IP), `LIMITE_CONNEXION = "5 per minute"`, `verifier_identifiants()` et le décorateur `admin_requis`.
 - `app/seo.py` : `/sitemap.xml` (les pages de `PAGES_INDEXEES` × 3 langues, avec `hreflang`) et `/robots.txt`. Les adresses sont complètes (`_external=True`) : aucun domaine n'est écrit en dur.
-- `app/templates/` : `base.html` (le `<head>`, avec `canonical` et `hreflang` sur les pages indexables), `partials/header.html` et `footer.html`, `vitrine/*.html`, `espace/*.html` (connexion, tableau de bord, erreur), `404.html`, `sitemap.xml`.
+- `app/templates/` : `base.html` (le `<head>`, avec `canonical` et `hreflang` sur les pages indexables), `partials/header.html` et `footer.html`, `vitrine/*.html`, `espace/*.html` (connexion, tableau de bord, administration, erreur), `404.html`, `sitemap.xml`.
 - `app/static/` : `css/style.css` (repris de la v1) et `js/main.js` (menu mobile, retour en haut, fondus `.fade-in` → `.visible`, formulaire de contact). Il n'y a pas d'i18n côté client.
 
 ### i18n (côté serveur)
@@ -52,12 +52,22 @@ Application web Flask de Mwene Consulting, cabinet de conseil en RH pour les PME
 - Limite de tentatives : `@limiter.limit(LIMITE_CONNEXION, methods=["POST"])`. Seuls les envois du formulaire comptent, et une fois la limite dépassée, même le bon mot de passe est refusé (429). Limites connues : les compteurs sont en mémoire (remis à zéro au redémarrage, non partagés entre plusieurs processus), et derrière un proxy, toutes les requêtes semblent venir de la même IP. Il faudra régler `ProxyFix` à la mise en ligne.
 - `User` hérite de `UserMixin`. `current_user` est disponible dans les templates.
 
+### Administration Mwene
+
+- `@admin_requis` (dans `securite.py`) protège **chaque** route d'administration. Une personne non connectée est redirigée vers la connexion, et un compte non administrateur reçoit 403 (`abort(403)`, page traduite avec un lien vers le tableau de bord). Toute nouvelle route d'administration doit porter ce décorateur, et un test doit vérifier qu'un compte client reçoit 403.
+- La page d'administration crée uniquement des **comptes clients** (`is_admin=False`, rattachés à une entreprise). Le champ `is_admin` du formulaire est ignoré. Les administrateurs Mwene se créent seulement avec `flask --app app create-admin`.
+- Formulaires : en cas d'erreur, la page est réaffichée avec le code 400 et des messages traduits (clés `admin_error_*`), rien n'est enregistré, et la saisie est gardée **sauf le mot de passe**. En cas de succès, on redirige vers la page d'administration avec un message flash (redirection après POST : un rafraîchissement ne renvoie pas le formulaire).
+- Un identifiant venant d'un formulaire passe par `_trouver(modele, identifiant)`, qui renvoie `None` s'il est absent, invalide ou inexistant.
+- Les textes qui citent la longueur minimale du mot de passe contiennent `{min}`, remplacé à l'affichage par `LONGUEUR_MIN_MOT_DE_PASSE` (filtre `replace` dans le template).
+- Pas encore possible : modifier ou supprimer une entreprise ou un compte, changer un mot de passe. Deux entreprises peuvent porter le même nom.
+
 ### Tests
 
 - `tests/conftest.py` fournit les fixtures `app` (`create_app(TestConfig)`) et `client`.
-- `test_i18n.py` (traductions), `test_vitrine.py` (chaque page × chaque langue, 404, menu, formulaire), `test_seo.py` (sitemap, robots, titres, hreflang), `test_models.py` (`Country`, `init-db`), `test_comptes.py` (`Company`, `User`, mots de passe, `create-admin`), `test_espace.py` (connexion, déconnexion, CSRF, limite de tentatives).
+- `test_i18n.py` (traductions), `test_vitrine.py` (chaque page × chaque langue, 404, menu, formulaire), `test_seo.py` (sitemap, robots, titres, hreflang), `test_models.py` (`Country`, `init-db`), `test_comptes.py` (`Company`, `User`, mots de passe, `create-admin`), `test_espace.py` (connexion, déconnexion, CSRF, limite de tentatives), `test_admin.py` (403 pour un compte client, création d'entreprise et de compte, erreurs de saisie, CSRF).
 - La protection CSRF reste **activée** pendant les tests : un test qui envoie un formulaire récupère d'abord le jeton dans la page (voir `jeton()` dans `test_espace.py`). Les compteurs de Flask-Limiter repartent de zéro à chaque test, car chaque test crée sa propre application.
 - Pour comparer un texte traduit au HTML, utilisez `markupsafe.escape(t(...))`, car Jinja échappe les apostrophes.
+- Avec SQLAlchemy 2, rattacher un objet à une relation (`User(company=entreprise)`) ne l'ajoute **pas** à la session : il faut un `db.session.add()` explicite. On peut lancer `pytest -W error::sqlalchemy.exc.SAWarning` pour transformer les avertissements de SQLAlchemy en erreurs.
 
 ### Base de données
 
