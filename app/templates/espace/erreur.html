@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{# Page d'erreur de l'Espace Recrutement : 429 (trop de tentatives) et 400 (jeton CSRF).
+   cle_titre et cle_texte sont des clés de traduction données par create_app(). #}
+{% set robots = "noindex, nofollow" %}
+
+{% block title %}{{ t(cle_titre) }} — Mwene Consulting{% endblock %}
+
+{% block content %}
+<section aria-labelledby="error-title" class="section">
+<div class="container" style="max-width:480px;">
+<h1 id="error-title">{{ t(cle_titre) }}</h1>
+<p>{{ t(cle_texte) }}</p>
+<a class="btn btn--primary" href="{{ url_for('espace.connexion', lang=lang) }}">{{ t('espace_back_to_login') }}</a>
+</div>
+</section>
+{% endblock %}

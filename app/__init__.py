@@ -9,6 +9,7 @@ from datetime import date
 import click
 import sqlalchemy
 from flask import Flask, g, redirect, render_template, request, url_for
+from flask_wtf.csrf import CSRFError
 
 from app.config import DevelopmentConfig
 from app.i18n import (
@@ -19,6 +20,7 @@ from app.i18n import (
     url_pour_langue,
 )
 from app.models import User, ajouter_pays_initiaux, db
+from app.securite import csrf, limiter, login_manager
 
 
 def create_app(config_class=DevelopmentConfig):
@@ -97,10 +99,17 @@ def create_app(config_class=DevelopmentConfig):
             "annee": date.today().year,
         }
 
+    # Sécurité de l'Espace Recrutement (voir app/securite.py).
+    login_manager.init_app(app)
+    csrf.init_app(app)
+    limiter.init_app(app)
+
+    from app.espace.routes import espace
     from app.seo import seo
     from app.vitrine.routes import vitrine
 
     app.register_blueprint(vitrine)
+    app.register_blueprint(espace)
     app.register_blueprint(seo)
 
     @app.route("/")
@@ -108,16 +117,35 @@ def create_app(config_class=DevelopmentConfig):
         """« / » renvoie vers la version portugaise, langue par défaut."""
         return redirect(url_for("vitrine.accueil", lang=LANGUE_PAR_DEFAUT))
 
-    @app.errorhandler(404)
-    def page_introuvable(erreur):
-        """Page 404 personnalisée, dans la langue du début de l'adresse.
+    def langue_de_la_page_d_erreur():
+        """Langue d'une page d'erreur : celle du début de l'adresse, sinon le portugais.
 
-        /fr/page-inexistante -> 404 en français.
-        /de/ ou /n-importe-quoi -> 404 en portugais.
+        /fr/page-inexistante -> français ; /de/ ou /n-importe-quoi -> portugais.
         """
         if g.get("lang") not in LANGUES:
             premier_morceau = request.path.strip("/").split("/")[0]
             g.lang = premier_morceau if premier_morceau in LANGUES else LANGUE_PAR_DEFAUT
+
+    @app.errorhandler(404)
+    def page_introuvable(erreur):
+        """Page 404 personnalisée, dans la langue du début de l'adresse."""
+        langue_de_la_page_d_erreur()
         return render_template("404.html"), 404
+
+    @app.errorhandler(429)
+    def trop_de_tentatives(erreur):
+        """Plus de LIMITE_CONNEXION tentatives : message traduit, code 429 conservé."""
+        langue_de_la_page_d_erreur()
+        return render_template(
+            "espace/erreur.html", cle_titre="espace_too_many_title", cle_texte="espace_too_many_text"
+        ), 429
+
+    @app.errorhandler(CSRFError)
+    def jeton_csrf_invalide(erreur):
+        """Formulaire sans jeton CSRF valide (absent, expiré, ou venant d'un autre site)."""
+        langue_de_la_page_d_erreur()
+        return render_template(
+            "espace/erreur.html", cle_titre="espace_csrf_title", cle_texte="espace_csrf_text"
+        ), 400
 
     return app

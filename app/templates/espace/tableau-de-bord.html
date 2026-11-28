@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% set robots = "noindex, nofollow" %}
+
+{% block title %}{{ t('meta_title_dashboard') }}{% endblock %}
+
+{% block content %}
+<section aria-labelledby="dashboard-title" class="section">
+<div class="container">
+<h1 id="dashboard-title">{{ t('espace_dashboard_title') }}</h1>
+<p>{{ t('espace_connected_as') }} <strong>{{ current_user.email }}</strong></p>
+<p>{{ t('espace_dashboard_empty') }}</p>
+
+{# Déconnexion par un formulaire POST avec jeton CSRF, et non par un simple lien. #}
+<form action="{{ url_for('espace.deconnexion') }}" method="post">
+<input name="csrf_token" type="hidden" value="{{ csrf_token() }}"/>
+<button class="btn btn--outline" type="submit">{{ t('espace_logout') }}</button>
+</form>
+</div>
+</section>
+{% endblock %}

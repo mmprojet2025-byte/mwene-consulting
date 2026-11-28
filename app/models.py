@@ -7,6 +7,7 @@ chaque attribut est une colonne, chaque objet est une ligne.
 import re
 import sqlite3
 
+from flask_login import UserMixin
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import CheckConstraint, ForeignKey, String, event
 from sqlalchemy.engine import Engine
@@ -106,8 +107,11 @@ class Company(db.Model):
         return f"<Company {self.id} {self.nom!r}>"
 
 
-class User(db.Model):
-    """Un compte : un administrateur Mwene, ou une personne d'une entreprise cliente."""
+class User(UserMixin, db.Model):
+    """Un compte : un administrateur Mwene, ou une personne d'une entreprise cliente.
+
+    UserMixin ajoute ce qu'attend Flask-Login (is_authenticated, get_id()…).
+    """
 
     __tablename__ = "users"
     __table_args__ = (

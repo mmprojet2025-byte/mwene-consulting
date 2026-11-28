@@ -15,6 +15,16 @@ class Config:
     # La valeur de repli ne sert qu'en développement local.
     SECRET_KEY = os.environ.get("SECRET_KEY", "dev-non-secrete-a-changer")
 
+    # Cookie de session (connexion à l'Espace Recrutement) :
+    # « Lax » = le navigateur ne l'envoie pas quand un autre site soumet un
+    # formulaire vers le nôtre (protection CSRF en plus du jeton de Flask-WTF).
+    # HttpOnly (JavaScript ne peut pas le lire) est déjà activé par Flask.
+    SESSION_COOKIE_SAMESITE = "Lax"
+
+    # Compteurs de Flask-Limiter (tentatives de connexion) gardés en mémoire :
+    # suffisant en développement et en test. Remis à zéro au redémarrage.
+    RATELIMIT_STORAGE_URI = "memory://"
+
 
 class DevelopmentConfig(Config):
     """Réglages pour travailler en local."""

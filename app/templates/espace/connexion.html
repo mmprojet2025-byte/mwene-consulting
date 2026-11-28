@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{# Espace privé : pas d'indexation, donc ni canonical ni hreflang (voir base.html). #}
+{% set robots = "noindex, nofollow" %}
+
+{% block title %}{{ t('meta_title_login') }}{% endblock %}
+
+{% block content %}
+<section aria-labelledby="login-title" class="section">
+<div class="container" style="max-width:480px;">
+<h1 id="login-title">{{ t('espace_login_title') }}</h1>
+<p>{{ t('espace_login_intro') }}</p>
+
+{# Messages « flash » : ce sont des clés de traduction (ex. après la déconnexion). #}
+{% for categorie, cle in get_flashed_messages(with_categories=true) %}
+<p class="form-hint" role="status">{{ t(cle) }}</p>
+{% endfor %}
+
+{% if echec %}
+{# Message neutre : on ne dit pas si c'est l'e-mail ou le mot de passe qui est faux. #}
+<p class="form-error visible" role="alert">{{ t('espace_login_error') }}</p>
+{% endif %}
+
+<form action="{{ url_for('espace.connexion') }}" method="post">
+<input name="csrf_token" type="hidden" value="{{ csrf_token() }}"/>
+<div class="form-group">
+<label class="form-label" for="email">{{ t('espace_email_label') }}</label>
+<input autocomplete="username" class="form-control" id="email" name="email" required="" type="email" value="{{ email }}"/>
+</div>
+<div class="form-group">
+<label class="form-label" for="mot_de_passe">{{ t('espace_password_label') }}</label>
+<input autocomplete="current-password" class="form-control" id="mot_de_passe" name="mot_de_passe" required="" type="password"/>
+</div>
+<button class="btn btn--primary" type="submit">{{ t('espace_login_submit') }}</button>
+</form>
+</div>
+</section>
+{% endblock %}
