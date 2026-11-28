@@ -3,9 +3,12 @@
 Les trois outils sont créés ici, puis reliés à l'application dans create_app().
 """
 
+from functools import wraps
+
+from flask import abort
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
-from flask_login import LoginManager
+from flask_login import LoginManager, current_user, login_required
 from flask_wtf.csrf import CSRFProtect
 from werkzeug.security import check_password_hash, generate_password_hash
 
@@ -25,6 +28,24 @@ login_manager.login_message_category = "info"
 def charger_compte(identifiant):
     """Retrouve le compte à partir de l'identifiant gardé dans le cookie de session."""
     return db.session.get(User, int(identifiant))
+
+
+def admin_requis(vue):
+    """Décorateur : page réservée aux administrateurs Mwene.
+
+    - pas connecté -> redirection vers la page de connexion (comme @login_required) ;
+    - connecté sans être administrateur -> erreur 403 (accès interdit).
+    À placer au-dessus de chaque route d'administration.
+    """
+
+    @wraps(vue)
+    @login_required
+    def enveloppe(*args, **kwargs):
+        if not current_user.is_admin:
+            abort(403)
+        return vue(*args, **kwargs)
+
+    return enveloppe
 
 
 # --- Flask-WTF : jeton CSRF obligatoire dans tous les formulaires POST ----------

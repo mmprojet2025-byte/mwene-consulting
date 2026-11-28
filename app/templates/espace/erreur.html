@@ -1,6 +1,10 @@
 {% extends "base.html" %}
-{# Page d'erreur de l'Espace Recrutement : 429 (trop de tentatives) et 400 (jeton CSRF).
-   cle_titre et cle_texte sont des clés de traduction données par create_app(). #}
+{# Page d'erreur de l'Espace Recrutement : 403 (réservé aux admins), 429 (trop de
+   tentatives) et 400 (jeton CSRF). cle_titre et cle_texte sont des clés de traduction
+   données par create_app(). Lien de retour : vers la connexion, sauf si
+   endpoint_retour et cle_retour sont précisés. #}
+{% set endpoint_retour = endpoint_retour | default('espace.connexion') %}
+{% set cle_retour = cle_retour | default('espace_back_to_login') %}
 {% set robots = "noindex, nofollow" %}
 
 {% block title %}{{ t(cle_titre) }} — Mwene Consulting{% endblock %}
@@ -10,7 +14,7 @@
 <div class="container" style="max-width:480px;">
 <h1 id="error-title">{{ t(cle_titre) }}</h1>
 <p>{{ t(cle_texte) }}</p>
-<a class="btn btn--primary" href="{{ url_for('espace.connexion', lang=lang) }}">{{ t('espace_back_to_login') }}</a>
+<a class="btn btn--primary" href="{{ url_for(endpoint_retour, lang=lang) }}">{{ t(cle_retour) }}</a>
 </div>
 </section>
 {% endblock %}

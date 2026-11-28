@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+{# Administration Mwene : entreprises clientes et leurs comptes (réservé à is_admin). #}
+{% set robots = "noindex, nofollow" %}
+
+{% block title %}{{ t('meta_title_admin') }}{% endblock %}
+
+{% block content %}
+<section aria-labelledby="admin-title" class="section">
+<div class="container" style="max-width:800px;">
+<h1 id="admin-title">{{ t('admin_title') }}</h1>
+<p>{{ t('admin_intro') }}</p>
+<p><a href="{{ url_for('espace.tableau_de_bord') }}">{{ t('espace_back_to_dashboard') }}</a></p>
+
+{% for categorie, cle in get_flashed_messages(with_categories=true) %}
+<p class="form-hint" role="status">{{ t(cle) }}</p>
+{% endfor %}
+
+{# --- Liste des entreprises --- #}
+<h2>{{ t('admin_companies_title') }}</h2>
+{% if entreprises %}
+<table>
+<thead>
+<tr><th scope="col">{{ t('admin_col_name') }}</th><th scope="col">{{ t('admin_col_country') }}</th><th scope="col">{{ t('admin_col_accounts') }}</th></tr>
+</thead>
+<tbody>
+{% for entreprise in entreprises %}
+<tr>
+<td>{{ entreprise.nom }}</td>
+<td>{{ entreprise.country.nom(lang) }}</td>
+<td>
+{{ entreprise.users | length }}
+{% if entreprise.users %}
+<ul>{% for compte in entreprise.users | sort(attribute='email') %}<li>{{ compte.email }}</li>{% endfor %}</ul>
+{% endif %}
+</td>
+</tr>
+{% endfor %}
+</tbody>
+</table>
+{% else %}
+<p>{{ t('admin_no_company') }}</p>
+{% endif %}
+
+{# --- Nouvelle entreprise --- #}
+<h2 id="new-company-title">{{ t('admin_new_company_title') }}</h2>
+{% for cle in erreurs_entreprise %}
+<p class="form-error visible" role="alert">{{ t(cle) }}</p>
+{% endfor %}
+<form action="{{ url_for('espace.creer_entreprise') }}" aria-labelledby="new-company-title" method="post">
+<input name="csrf_token" type="hidden" value="{{ csrf_token() }}"/>
+<div class="form-group">
+<label class="form-label" for="company-name">{{ t('admin_company_name_label') }}</label>
+<input class="form-control" id="company-name" maxlength="200" name="nom" required="" type="text" value="{{ saisie.get('nom', '') if erreurs_entreprise else '' }}"/>
+</div>
+<div class="form-group">
+<label class="form-label" for="company-country">{{ t('admin_country_label') }}</label>
+<select class="form-control" id="company-country" name="pays" required="">
+{% for p in pays %}
+<option value="{{ p.id }}"{% if erreurs_entreprise and saisie.get('pays') == p.id | string %} selected=""{% endif %}>{{ p.nom(lang) }} ({{ p.code }}, {{ p.devise }})</option>
+{% endfor %}
+</select>
+</div>
+<button class="btn btn--primary" type="submit">{{ t('admin_create_company_submit') }}</button>
+</form>
+
+{# --- Nouveau compte d'entreprise --- #}
+<h2 id="new-user-title">{{ t('admin_new_user_title') }}</h2>
+{% if entreprises %}
+{% for cle in erreurs_compte %}
+<p class="form-error visible" role="alert">{{ t(cle) | replace('{min}', longueur_min | string) }}</p>
+{% endfor %}
+<form action="{{ url_for('espace.creer_compte') }}" aria-labelledby="new-user-title" method="post">
+<input name="csrf_token" type="hidden" value="{{ csrf_token() }}"/>
+<div class="form-group">
+<label class="form-label" for="user-company">{{ t('admin_company_label') }}</label>
+<select class="form-control" id="user-company" name="entreprise" required="">
+{% for entreprise in entreprises %}
+<option value="{{ entreprise.id }}"{% if erreurs_compte and saisie.get('entreprise') == entreprise.id | string %} selected=""{% endif %}>{{ entreprise.nom }}</option>
+{% endfor %}
+</select>
+</div>
+<div class="form-group">
+<label class="form-label" for="user-email">{{ t('espace_email_label') }}</label>
+<input autocomplete="off" class="form-control" id="user-email" name="email" required="" type="email" value="{{ saisie.get('email', '') if erreurs_compte else '' }}"/>
+</div>
+<div class="form-group">
+<label class="form-label" for="user-password">{{ t('espace_password_label') }}</label>
+{# new-password : le navigateur ne propose pas le mot de passe de l'administrateur. #}
+<input aria-describedby="user-password-hint" autocomplete="new-password" class="form-control" id="user-password" minlength="{{ longueur_min }}" name="mot_de_passe" required="" type="password"/>
+<span class="form-hint" id="user-password-hint">{{ t('admin_password_hint') | replace('{min}', longueur_min | string) }}</span>
+</div>
+<button class="btn btn--primary" type="submit">{{ t('admin_create_user_submit') }}</button>
+</form>
+{% else %}
+<p>{{ t('admin_need_company_first') }}</p>
+{% endif %}
+</div>
+</section>
+{% endblock %}

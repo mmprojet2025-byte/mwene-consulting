@@ -132,6 +132,18 @@ def create_app(config_class=DevelopmentConfig):
         langue_de_la_page_d_erreur()
         return render_template("404.html"), 404
 
+    @app.errorhandler(403)
+    def acces_interdit(erreur):
+        """Page réservée aux administrateurs, visitée par un compte client."""
+        langue_de_la_page_d_erreur()
+        return render_template(
+            "espace/erreur.html",
+            cle_titre="espace_forbidden_title",
+            cle_texte="espace_forbidden_text",
+            endpoint_retour="espace.tableau_de_bord",
+            cle_retour="espace_back_to_dashboard",
+        ), 403
+
     @app.errorhandler(429)
     def trop_de_tentatives(erreur):
         """Plus de LIMITE_CONNEXION tentatives : message traduit, code 429 conservé."""
